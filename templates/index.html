@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+{% block content %}
+
+    <!-- MAIN WRAPPER -->
+    <div class="d-flex flex-column flex-md-row">
+        {% include 'includes/sidebar.html' %}
+
+        <!-- Main Content Column -->
+        <main class="px-4 py-4 flex-grow-1 kb-main-content">
+
+            <!-- Sticky Searchbar Section -->
+            <div id="sticky-controls-wrapper" class="sticky-controls-wrapper mb-4">
+                <div id="sticky-controls"
+                    class="sticky-controls bg-body d-flex align-items-center justify-content-center gap-2 w-100 p-2 rounded">
+                    <div id="sticky-controls-inner" class="d-flex flex-wrap align-items-center gap-2 w-75 px-0 px-md-2">
+                        <button id="sidebar-toggle-search" class="action-btn flex-shrink-0"
+                            title="{% translate 'Toggle Sidebar' %}">
+                            <i class="fa-solid fa-bars icon-slate"></i>
+                        </button>
+                        <div class="search-wrap search-box flex-grow-1 search-box-min-width">
+                            <span class="search-icon"><i
+                                    class="fa-solid fa-magnifying-glass fa-sm icon-slate"></i></span>
+                            <input type="text" id="search-input" class="form-control form-control-sm search-input w-100"
+                                placeholder="{% translate 'Search date, user, question…' %}">
+                            <div id="search-nav-controls" class="search-nav d-none align-items-center gap-1">
+                                <span id="search-nav-text" class="icon-blue small font-mono opacity-75">0/0</span>
+                                <button id="search-nav-prev" class="btn btn-sm p-0 icon-blue opacity-75 hover-opacity-100" title="{% translate 'Previous hit' %}"><i class="fa-solid fa-chevron-up"></i></button>
+                                <button id="search-nav-next" class="btn btn-sm p-0 icon-blue opacity-75 hover-opacity-100" title="{% translate 'Next hit' %}"><i class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                            <span class="search-clear" id="search-clear-btn" title="{% translate 'Clear search' %}"><i
+                                    class="fa-solid fa-xmark"></i></span>
+                        </div>
+                        <select id="sort-select" class="form-select form-select-sm sort-select w-auto"
+                            title="{% translate 'Sort Order' %}">
+                            <option value="date-desc">{% translate "Newest First" %}</option>
+                            <option value="date-asc">{% translate "Oldest First" %}</option>
+                            <option value="user-asc">{% translate "User A-Z" %}</option>
+                            <option value="user-desc">{% translate "User Z-A" %}</option>
+                        </select>
+                        {% if can_edit %}
+                        <button id="add-row-btn" class="btn btn-sm btn-add-row flex-shrink-0 px-2"
+                            title="{% translate 'Add Row' %}">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+                        <!-- Header Row -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3 mb-3">
+                <div class="flex-shrink-0">
+                    <h2 class="fw-bold mb-1 d-flex align-items-center gap-2 section-title">
+                        <span id="category-title-display" data-default-title="{% translate 'All Questions' %}">{% translate "All Questions" %}</span>
+                        <span class="count-badge" id="pages-count-badge">0</span>
+                    </h2>
+
+                </div>
+            </div>
+
+            <div class="alert alert-warning py-2 mb-3 fw-bold text-center">Dummy data used</div>
+
+            <!-- Table -->
+            <div class="kb-table-wrap bg-body shadow-sm mb-4">
+
+                <!-- Pagination Bar (top) -->
+                <div id="pagination-bar"
+                    class="d-none d-flex align-items-center justify-content-between px-3 py-2 border-bottom pagination-bar-text">
+                    <span id="pagination-info" class="text-secondary"></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="page-prev-btn" class="action-btn" title="{% translate 'Previous page' %}" disabled>
+                            <i class="fa-solid fa-chevron-left fa-xs"></i>
+                        </button>
+                        <span id="pagination-pages" class="text-secondary font-mono pagination-page-label"></span>
+                        <button id="page-next-btn" class="action-btn" title="{% translate 'Next page' %}" disabled>
+                            <i class="fa-solid fa-chevron-right fa-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Header -->
+                <div class="kb-header d-none d-md-flex row g-0 m-0 w-100">
+                    <div class="col-md-1 justify-content-center"><i class="fa-solid fa-user icon-teal"
+                            title="{% translate 'User' %}"></i></div>
+                    <div class="col-md-5 justify-content-center"><i
+                            class="fa-solid fa-circle-question me-1 icon-purple"></i>{% translate "Question" %}</div>
+                    <div class="col-md-5 justify-content-center"><i
+                            class="fa-solid fa-check-circle me-1 icon-emerald"></i>{% translate "Answer" %}</div>
+                    <div class="col-md-1 justify-content-center"><i class="fa-solid fa-user-shield icon-teal"
+                            title="{% translate 'Admin' %}"></i></div>
+                </div>
+
+                <!-- Rows -->
+                <ul id="rows-list"></ul>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="d-none p-5 text-center">
+                    <div
+                        class="empty-icon d-flex align-items-center justify-content-center mx-auto mb-3 text-secondary">
+                        <i class="fa-solid fa-circle-question fa-lg"></i>
+                    </div>
+                    <h6 class="fw-semibold mb-1">{% translate "No matching entries" %}</h6>
+                    <p class="text-secondary mb-0 text-empty">{% translate "Try adjusting your search or add a new row." %}</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    {% include 'includes/lightbox.html' %}
+
+{% endblock %}

@@ -1,0 +1,71 @@
+{% load i18n %}
+    <!-- IMAGE LIGHTBOX -->
+    <div id="image-overlay">
+        <!-- Lightbox toolbar: top-right -->
+        <div class="lightbox-toolbar">
+            <button class="lightbox-tool-btn" title="{% translate 'Zoom In (Scroll Up)' %}" onclick="changeZoom(0.2)">
+                <i class="fa-solid fa-magnifying-glass-plus"></i>
+            </button>
+            <button class="lightbox-tool-btn" title="{% translate 'Zoom Out (Scroll Down)' %}"
+                onclick="changeZoom(-0.2)">
+                <i class="fa-solid fa-magnifying-glass-minus"></i>
+            </button>
+            <button class="lightbox-tool-btn" title="{% translate 'Reset View' %}" onclick="resetZoom()">
+                <i class="fa-solid fa-compress"></i>
+            </button>
+
+            <button id="undo-btn" class="lightbox-tool-btn" title="{% translate 'Undo (Ctrl+Z)' %}"
+                onclick="undoDrawing()" style="display: none;">
+                <i class="fa-solid fa-rotate-left"></i>
+            </button>
+            <div class="lightbox-pencils">
+                <i class="fa-solid fa-pencil lightbox-pencil-red" title="{% translate 'Red Pen (1)' %}"
+                    onclick="selectPencil('red', this)"></i>
+                <i class="fa-solid fa-pencil lightbox-pencil-yellow" title="{% translate 'Yellow Pen (2)' %}"
+                    onclick="selectPencil('yellow', this)"></i>
+                <i class="fa-solid fa-pencil lightbox-pencil-green" title="{% translate 'Green Pen (3)' %}"
+                    onclick="selectPencil('green', this)"></i>
+            </div>
+            <button id="save-img-btn" class="lightbox-tool-btn" style="display: none;"
+                title="{% translate 'Save annotations to database (S)' %}" onclick="saveLightboxDrawing()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span id="save-img-label">{% translate "Save" %}</span>
+            </button>
+            <button id="copy-img-btn" class="lightbox-tool-btn" title="{% translate 'Copy image to clipboard (C)' %}"
+                onclick="copyLightboxImage()">
+                <i class="fa-regular fa-copy"></i>
+                <span id="copy-img-label">{% translate "Copy" %}</span>
+            </button>
+            <button id="close-overlay-btn" class="lightbox-tool-btn lightbox-tool-close"
+                title="{% translate 'Close (Esc)' %}" onclick="closeOverlayFn()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-3 text-center lightbox-body">
+            <div class="lightbox-img-wrap">
+                <img id="overlay-img" src="" alt="{% translate 'Zoomed image' %}" class="img-fluid lightbox-img">
+                <canvas id="lightbox-canvas"></canvas>
+                <div id="lightbox-highlight-container" class="ocr-highlight-layer"></div>
+            </div>
+            <p id="overlay-label" class="font-mono text-secondary mt-2 mb-0 lightbox-label"></p>
+        </div>
+        <!-- Bootstrap Toast for Confirmation -->
+        <div class="toast-container position-absolute top-0 start-0 p-2 lightbox-toast-container">
+            <div id="lightboxConfirmToast" class="toast shadow-sm border-warning-subtle lightbox-toast" role="alert"
+                aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
+                <div class="toast-header bg-warning-subtle text-warning-emphasis border-warning-subtle py-1 px-2">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                    <strong class="me-auto">{% translate "Unsaved" %}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"
+                        aria-label="{% translate 'Close' %}"></button>
+                </div>
+                <div class="toast-body bg-body text-center p-2">
+                    <p>{% translate "Close without saving?" %}</p>
+                    <div class="d-flex justify-content-center gap-1">
+                        <button type="button" class="btn btn-secondary py-0 px-1" data-bs-dismiss="toast">{% translate "Cancel" %}</button>
+                        <button type="button" class="btn btn-warning py-0 px-1" onclick="confirmCloseOverlay()">{% translate "Close" %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

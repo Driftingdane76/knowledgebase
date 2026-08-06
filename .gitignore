@@ -1,0 +1,62 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment & Secrets (Django & GCP Credentials)
+.env
+.env.*
+production_env
+*.env
+service_account.json
+client_secret*.json
+*.pem
+*.key
+
+# Databases
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Django Media & Collected Static Files
+media/
+staticfiles/
+
+# Test & Debug Outputs
+test_output_images/
+test_htmls/
+presentation_screenshots/
+
+# Logs
+*.log
+*.pot
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.gemini/
+.agents/
+AGENTS.md
+.cursorrules
+.cursor/
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini

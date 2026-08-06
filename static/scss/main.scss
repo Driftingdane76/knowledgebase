@@ -1,0 +1,87 @@
+/*!
+ * Project: Q&A Knowledgebase
+ * Custom SCSS - Bootstrap 5.3 overrides and extensions
+ * Compile: sass static/scss/main.scss static/css/main.css
+ */
+
+// -------------------------------------------------------
+// 1. Bootstrap variable overrides (BEFORE the import)
+// -------------------------------------------------------
+
+// Brand color palette
+$primary:        #0ea5e9;   // sky-500
+$primary-dark:   #0284c7;   // sky-600
+$success:        #10b981;   // emerald-500
+$danger:         #ef4444;   // red-500
+$warning:        #f59e0b;   // amber-500
+$info:           #6366f1;   // indigo-500
+
+// Typography
+$font-family-sans-serif:    'Inter', system-ui, -apple-system, sans-serif;
+$font-family-monospace:     'JetBrains Mono', 'Courier New', monospace;
+$font-size-base:            0.9375rem;   // 15px
+$line-height-base:          1.6;
+
+// Border radius
+$border-radius:             0.5rem;
+$border-radius-sm:          0.35rem;
+$border-radius-lg:          0.75rem;
+$border-radius-xl:          1rem;
+
+// Transitions
+$transition-base:           all 0.15s ease-in-out;
+
+// -------------------------------------------------------
+// 2. Import Bootstrap source SCSS
+// -------------------------------------------------------
+@import 'bootstrap/bootstrap';
+
+// -------------------------------------------------------
+// 3. Import Font Awesome
+// -------------------------------------------------------
+@import 'fontawesome/fontawesome';
+@import 'fontawesome/solid';
+@import 'fontawesome/regular';
+@import 'fontawesome/brands';
+
+// -------------------------------------------------------
+// 4. Project utilities & component overrides
+// -------------------------------------------------------
+
+// Font helpers
+.font-mono { font-family: $font-family-monospace !important; }
+
+// Custom badge variants
+.badge-kb-user {
+    background: rgba($primary, 0.12);
+    color: darken($primary, 10%);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+}
+
+.badge-kb-date {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+    font-family: $font-family-monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: $border-radius-sm;
+}
+
+// Search highlight
+mark.search-hit {
+    background: rgba($warning, 0.25);
+    color: inherit;
+    padding: 0 2px;
+    border-radius: 3px;
+    font-weight: 600;
+    border: 1px solid rgba($warning, 0.35);
+}
+
+// Smooth dark mode transition
+html {
+    transition: background-color 0.2s ease, color 0.15s ease;
+}

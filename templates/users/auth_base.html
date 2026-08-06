@@ -1,0 +1,77 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="da" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% translate "Authentication" %} | Q&A Knowledge{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5.3 & Font Awesome 6 -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome/all.min.css' %}">
+    
+    <!-- App Styles -->
+    <link rel="stylesheet" href="{% static 'css/app.css' %}?v=1.8">
+    
+    {% block extra_head %}{% endblock %}
+    
+    <style>
+        .auth-card {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .auth-header {
+            background: linear-gradient(135deg, var(--bs-primary) 0%, #2b5cff 100%);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        .auth-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+
+    <!-- Minimal Navbar -->
+    <nav class="app-navbar border-bottom shadow-sm bg-body">
+        <div class="container-xl px-4 navbar-inner d-flex justify-content-center">
+            <a href="{% url 'index' %}" class="d-flex align-items-center gap-2 text-decoration-none text-body py-2">
+                <div class="p-2 rounded-3 brand-icon" style="background: rgba(13, 110, 253, 0.1);">
+                    <i class="fa-solid fa-circle-question fa-lg icon-blue"></i>
+                </div>
+                <h1 class="mb-0 fw-bold app-title fs-4">Q&A <span class="text-secondary fw-normal mx-1">|</span> {% translate "Knowledge" %}</h1>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1 d-flex align-items-center justify-content-center py-5 px-3">
+        <div class="container" style="max-width: 420px;">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="{% static 'js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

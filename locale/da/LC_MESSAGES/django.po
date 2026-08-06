@@ -1,0 +1,541 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-11 12:52+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\templates\header.html:11 .\templates\index_backup.html:39
+#: .\templates\index_backup_2026-06-22_22-17.html:39
+#: .\templates\users\auth_base.html:52
+msgid "Knowledge"
+msgstr "Viden"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Controls &amp; Shortcuts"
+msgstr "Styring &amp; Genveje"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Editing"
+msgstr "Redigering"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Click any cell to edit inline"
+msgstr "Klik på en celle for at redigere"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Press &lt;kbd&gt;Enter&lt;/kbd&gt; to save fields"
+msgstr "Tryk &lt;kbd&gt;Enter&lt;/kbd&gt; for at gemme"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Press &lt;kbd&gt;Esc&lt;/kbd&gt; to discard"
+msgstr "Tryk &lt;kbd&gt;Esc&lt;/kbd&gt; for at annullere"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Click outside to autosave"
+msgstr "Klik udenfor for at gemme automatisk"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Search &amp; Highlight"
+msgstr "Søg &amp; Fremhæv"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Paste text anywhere to auto-search"
+msgstr "Sæt tekst ind for at søge automatisk"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Select text &amp; pick color to highlight"
+msgstr "Marker tekst &amp; vælg farve for at fremhæve"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Eraser swatch clears highlights"
+msgstr "Viskelæder fjerner fremhævninger"
+
+#: .\templates\header.html:20
+msgid "Lightbox Editor"
+msgstr "Lightbox-editor"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid ""
+"Press &lt;kbd&gt;1&lt;/kbd&gt;, &lt;kbd&gt;2&lt;/kbd&gt;, &lt;kbd&gt;3&lt;/"
+"kbd&gt; for pens"
+msgstr ""
+"Tryk &lt;kbd&gt;1&lt;/kbd&gt;, &lt;kbd&gt;2&lt;/kbd&gt;, &lt;kbd&gt;3&lt;/"
+"kbd&gt; for at vælge pen"
+
+#: .\templates\header.html:20
+msgid "&lt;kbd&gt;Space&lt;/kbd&gt; + drag to pan"
+msgstr "&lt;kbd&gt;Mellemrum&lt;/kbd&gt; + træk for at panorere"
+
+#: .\templates\header.html:20 .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid ""
+"Press &lt;kbd&gt;S&lt;/kbd&gt; to save, &lt;kbd&gt;C&lt;/kbd&gt; to copy"
+msgstr ""
+"Tryk &lt;kbd&gt;S&lt;/kbd&gt; for at gemme, &lt;kbd&gt;C&lt;/kbd&gt; for at "
+"kopiere"
+
+#: .\templates\header.html:20
+msgid ""
+"Scroll or &lt;kbd&gt;Ctrl&lt;/kbd&gt; &lt;kbd&gt;+&lt;/kbd&gt;&lt;kbd&gt;-"
+"&lt;/kbd&gt; to zoom"
+msgstr ""
+"Scroll eller &lt;kbd&gt;Ctrl&lt;/kbd&gt; &lt;kbd&gt;+&lt;/kbd&gt;&lt;kbd&gt;-"
+"&lt;/kbd&gt; for at zoome"
+
+#: .\templates\header.html:20 .\templates\includes\lightbox.html:17
+#: .\templates\index_backup.html:237
+#: .\templates\index_backup_2026-06-22_22-17.html:237
+msgid "Undo (Ctrl+Z)"
+msgstr "Fortryd (Ctrl+Z)"
+
+#: .\templates\header.html:24 .\templates\index_backup.html:176
+#: .\templates\index_backup_2026-06-22_22-17.html:176
+msgid "Print to PDF"
+msgstr "Udskriv til PDF"
+
+#: .\templates\header.html:59 .\templates\index_backup.html:79
+#: .\templates\index_backup_2026-06-22_22-17.html:79
+msgid "Toggle Theme"
+msgstr "Skift tema"
+
+#: .\templates\header.html:63 .\templates\index_backup.html:84
+#: .\templates\index_backup_2026-06-22_22-17.html:84
+msgid "Reload"
+msgstr "Genindlæs"
+
+#: .\templates\includes\lightbox.html:6 .\templates\index_backup.html:227
+#: .\templates\index_backup_2026-06-22_22-17.html:227
+msgid "Zoom In (Scroll Up)"
+msgstr "Zoom ind (Scroll op)"
+
+#: .\templates\includes\lightbox.html:9 .\templates\index_backup.html:230
+#: .\templates\index_backup_2026-06-22_22-17.html:230
+msgid "Zoom Out (Scroll Down)"
+msgstr "Zoom ud (Scroll ned)"
+
+#: .\templates\includes\lightbox.html:13 .\templates\index_backup.html:233
+#: .\templates\index_backup_2026-06-22_22-17.html:233
+msgid "Reset View"
+msgstr "Nulstil visning"
+
+#: .\templates\includes\lightbox.html:22 .\templates\index_backup.html:241
+#: .\templates\index_backup_2026-06-22_22-17.html:241
+msgid "Red Pen (1)"
+msgstr "Rød pen (1)"
+
+#: .\templates\includes\lightbox.html:24 .\templates\index_backup.html:242
+#: .\templates\index_backup_2026-06-22_22-17.html:242
+msgid "Yellow Pen (2)"
+msgstr "Gul pen (2)"
+
+#: .\templates\includes\lightbox.html:26 .\templates\index_backup.html:243
+#: .\templates\index_backup_2026-06-22_22-17.html:243
+msgid "Green Pen (3)"
+msgstr "Grøn pen (3)"
+
+#: .\templates\includes\lightbox.html:30 .\templates\index_backup.html:245
+#: .\templates\index_backup_2026-06-22_22-17.html:245
+msgid "Save annotations to database (S)"
+msgstr "Gem markeringer til databasen (S)"
+
+#: .\templates\includes\lightbox.html:32 .\templates\index_backup.html:247
+#: .\templates\index_backup_2026-06-22_22-17.html:247
+msgid "Save"
+msgstr "Gem"
+
+#: .\templates\includes\lightbox.html:34 .\templates\index_backup.html:249
+#: .\templates\index_backup_2026-06-22_22-17.html:249
+msgid "Copy image to clipboard (C)"
+msgstr "Kopiér billede (C)"
+
+#: .\templates\includes\lightbox.html:37 .\templates\index_backup.html:251
+#: .\templates\index_backup_2026-06-22_22-17.html:251
+msgid "Copy"
+msgstr "Kopiér"
+
+#: .\templates\includes\lightbox.html:40 .\templates\index_backup.html:253
+#: .\templates\index_backup_2026-06-22_22-17.html:253
+msgid "Close (Esc)"
+msgstr "Luk (Esc)"
+
+#: .\templates\includes\lightbox.html:46 .\templates\index_backup.html:259
+#: .\templates\index_backup_2026-06-22_22-17.html:259
+msgid "Zoomed image"
+msgstr "Forstørret billede"
+
+#: .\templates\includes\lightbox.html:58 .\templates\index_backup.html:270
+#: .\templates\index_backup_2026-06-22_22-17.html:270
+msgid "Unsaved"
+msgstr "Ikke gemt"
+
+#: .\templates\includes\lightbox.html:60 .\templates\includes\lightbox.html:66
+#: .\templates\index_backup.html:271 .\templates\index_backup.html:277
+#: .\templates\index_backup_2026-06-22_22-17.html:271
+#: .\templates\index_backup_2026-06-22_22-17.html:277
+msgid "Close"
+msgstr "Luk"
+
+#: .\templates\includes\lightbox.html:63 .\templates\index_backup.html:274
+#: .\templates\index_backup_2026-06-22_22-17.html:274
+msgid "Close without saving?"
+msgstr "Luk uden at gemme?"
+
+#: .\templates\includes\lightbox.html:65 .\templates\index_backup.html:276
+#: .\templates\index_backup_2026-06-22_22-17.html:276
+msgid "Cancel"
+msgstr "Annuller"
+
+#: .\templates\includes\sidebar.html:7 .\templates\index_backup.html:97
+#: .\templates\index_backup_2026-06-22_22-17.html:97
+msgid "Categories"
+msgstr "Kategorier"
+
+#: .\templates\includes\sidebar.html:16 .\templates\index_backup.html:105
+#: .\templates\index_backup_2026-06-22_22-17.html:105
+msgid "Filter categories..."
+msgstr "Filtrér kategorier..."
+
+#: .\templates\includes\sidebar.html:27 .\templates\index_backup.html:116
+#: .\templates\index_backup_2026-06-22_22-17.html:116
+msgid "New category..."
+msgstr "Ny kategori..."
+
+#: .\templates\includes\sidebar.html:37
+msgid "Tags"
+msgstr "Tags"
+
+#: .\templates\includes\sidebar.html:43 .\templates\index_backup.html:132
+#: .\templates\index_backup_2026-06-22_22-17.html:132
+msgid "Loading tags..."
+msgstr "Indlæser tags..."
+
+#: .\templates\index.html:18 .\templates\index_backup.html:156
+#: .\templates\index_backup_2026-06-22_22-17.html:156
+msgid "Toggle Sidebar"
+msgstr "Skift sidepanel"
+
+#: .\templates\index.html:25 .\templates\index_backup.html:162
+#: .\templates\index_backup_2026-06-22_22-17.html:162
+msgid "Search date, user, question…"
+msgstr "Søg efter dato, bruger, spørgsmål…"
+
+#: .\templates\index.html:28
+#, fuzzy
+#| msgid "Previous page"
+msgid "Previous hit"
+msgstr "Forrige side"
+
+#: .\templates\index.html:29
+msgid "Next hit"
+msgstr ""
+
+#: .\templates\index.html:31 .\templates\index_backup.html:163
+#: .\templates\index_backup_2026-06-22_22-17.html:163
+msgid "Clear search"
+msgstr "Ryd søgning"
+
+#: .\templates\index.html:35 .\templates\index_backup.html:165
+#: .\templates\index_backup_2026-06-22_22-17.html:165
+msgid "Sort Order"
+msgstr "Sortering"
+
+#: .\templates\index.html:36 .\templates\index_backup.html:166
+#: .\templates\index_backup_2026-06-22_22-17.html:166
+msgid "Newest First"
+msgstr "Nyeste først"
+
+#: .\templates\index.html:37 .\templates\index_backup.html:167
+#: .\templates\index_backup_2026-06-22_22-17.html:167
+msgid "Oldest First"
+msgstr "Ældste først"
+
+#: .\templates\index.html:38 .\templates\index_backup.html:168
+#: .\templates\index_backup_2026-06-22_22-17.html:168
+msgid "User A-Z"
+msgstr "Bruger A-Å"
+
+#: .\templates\index.html:39 .\templates\index_backup.html:169
+#: .\templates\index_backup_2026-06-22_22-17.html:169
+msgid "User Z-A"
+msgstr "Bruger Å-A"
+
+#: .\templates\index.html:43 .\templates\index_backup.html:172
+#: .\templates\index_backup_2026-06-22_22-17.html:172
+msgid "Add Row"
+msgstr "Tilføj række"
+
+#: .\templates\index.html:55 .\templates\index_backup.html:145
+#: .\templates\index_backup.html:1489
+#: .\templates\index_backup_2026-06-22_22-17.html:145
+#: .\templates\index_backup_2026-06-22_22-17.html:1489
+msgid "All Questions"
+msgstr "Alle spørgsmål"
+
+#: .\templates\index.html:72 .\templates\index_backup.html:211
+#: .\templates\index_backup_2026-06-22_22-17.html:211
+msgid "Previous page"
+msgstr "Forrige side"
+
+#: .\templates\index.html:76 .\templates\index_backup.html:215
+#: .\templates\index_backup_2026-06-22_22-17.html:215
+msgid "Next page"
+msgstr "Næste side"
+
+#: .\templates\index.html:85
+msgid "User"
+msgstr "Bruger"
+
+#: .\templates\index.html:87 .\templates\index_backup.html:188
+#: .\templates\index_backup_2026-06-22_22-17.html:188
+msgid "Question"
+msgstr "Spørgsmål"
+
+#: .\templates\index.html:89 .\templates\index_backup.html:189
+#: .\templates\index_backup_2026-06-22_22-17.html:189
+msgid "Answer"
+msgstr "Svar"
+
+#: .\templates\index.html:91
+msgid "Admin"
+msgstr ""
+
+#: .\templates\index.html:103 .\templates\index_backup.html:201
+#: .\templates\index_backup_2026-06-22_22-17.html:201
+msgid "No matching entries"
+msgstr "Ingen matchende records"
+
+#: .\templates\index.html:104 .\templates\index_backup.html:202
+#: .\templates\index_backup_2026-06-22_22-17.html:202
+msgid "Try adjusting your search or add a new row."
+msgstr "Prøv at ændre din søgning, eller tilføj en ny række."
+
+#: .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Image Annotation"
+msgstr "Billedmarkering"
+
+#: .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Paste/Drop images into Question"
+msgstr "Sæt/træk billeder ind i spørgsmålet"
+
+#: .\templates\index_backup.html:48
+#: .\templates\index_backup_2026-06-22_22-17.html:48
+msgid "Hold &lt;kbd&gt;Space&lt;/kbd&gt; + drag to pan"
+msgstr "Hold &lt;kbd&gt;Mellemrum&lt;/kbd&gt; + træk for at panorere"
+
+#: .\templates\index_backup.html:126
+#: .\templates\index_backup_2026-06-22_22-17.html:126
+msgid "Trending Tags"
+msgstr "Populære tags"
+
+#: .\templates\index_backup.html:187
+#: .\templates\index_backup_2026-06-22_22-17.html:187
+msgid "Date / User"
+msgstr "Dato / Bruger"
+
+#: .\templates\users\auth_base.html:7
+msgid "Authentication"
+msgstr "Godkendelse"
+
+#: .\templates\users\login.html:4 .\templates\users\login.html:49
+msgid "Sign In"
+msgstr "Log ind"
+
+#: .\templates\users\login.html:10
+msgid "Welcome Back"
+msgstr "Velkommen tilbage"
+
+#: .\templates\users\login.html:11
+msgid "Sign in to continue to your account"
+msgstr "Log ind for at fortsætte til din konto"
+
+#: .\templates\users\login.html:24 .\templates\users\password_reset.html:18
+msgid "Email Address"
+msgstr "E-mailadresse"
+
+#: .\templates\users\login.html:36
+msgid "Password"
+msgstr "Adgangskode"
+
+#: .\templates\users\login.html:37
+msgid "Forgot Password?"
+msgstr "Glemt adgangskode?"
+
+#: .\templates\users\login.html:55
+msgid "Don't have an account?"
+msgstr "Har du ikke en konto?"
+
+#: .\templates\users\login.html:55
+msgid "Sign up here"
+msgstr "Opret dig her"
+
+#: .\templates\users\password_reset.html:4
+#: .\templates\users\password_reset.html:10
+msgid "Reset Password"
+msgstr "Nulstil adgangskode"
+
+#: .\templates\users\password_reset.html:11
+msgid "We'll send you a link to reset your password"
+msgstr "Vi sender dig et link til at nulstille din adgangskode"
+
+#: .\templates\users\password_reset.html:29
+msgid "Send Reset Link"
+msgstr "Send nulstillingslink"
+
+#: .\templates\users\password_reset.html:34
+msgid "Back to login"
+msgstr "Tilbage til login"
+
+#: .\templates\users\password_reset_complete.html:4
+msgid "Password Changed"
+msgstr "Adgangskode ændret"
+
+#: .\templates\users\password_reset_complete.html:10
+msgid "Password Changed!"
+msgstr "Adgangskode ændret!"
+
+#: .\templates\users\password_reset_complete.html:17
+msgid "Your password has been successfully reset."
+msgstr "Din adgangskode er blevet nulstillet."
+
+#: .\templates\users\password_reset_complete.html:20
+msgid "Sign in to your account"
+msgstr "Log ind på din konto"
+
+#: .\templates\users\password_reset_confirm.html:4
+msgid "Enter New Password"
+msgstr "Indtast ny adgangskode"
+
+#: .\templates\users\password_reset_confirm.html:10
+msgid "New Password"
+msgstr "Ny adgangskode"
+
+#: .\templates\users\password_reset_confirm.html:11
+msgid ""
+"Please enter your new password twice so we can verify you typed it in "
+"correctly."
+msgstr "Indtast venligst din nye adgangskode to gange, så vi kan bekræfte den."
+
+#: .\templates\users\password_reset_confirm.html:32
+msgid "Change Password"
+msgstr "Skift adgangskode"
+
+#: .\templates\users\password_reset_confirm.html:39
+msgid ""
+"The password reset link was invalid, possibly because it has already been "
+"used."
+msgstr ""
+"Nulstillingslinket var ugyldigt, muligvis fordi det allerede er blevet brugt."
+
+#: .\templates\users\password_reset_confirm.html:41
+msgid "Request a new password reset"
+msgstr "Anmod om en ny nulstilling af adgangskode"
+
+#: .\templates\users\password_reset_done.html:4
+msgid "Email Sent"
+msgstr "E-mail sendt"
+
+#: .\templates\users\password_reset_done.html:10
+msgid "Check Your Inbox"
+msgstr "Tjek din indbakke"
+
+#: .\templates\users\password_reset_done.html:14
+msgid ""
+"We've emailed you instructions for setting your password, if an account "
+"exists with the email you entered. You should receive them shortly."
+msgstr ""
+"Vi har sendt dig instruktioner til at indstille din adgangskode, hvis der "
+"findes en konto med den indtastede e-mail. Du bør modtage dem inden for kort "
+"tid."
+
+#: .\templates\users\password_reset_done.html:17
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+"Hvis du ikke modtager en e-mail, skal du sikre dig, at du har indtastet den "
+"adresse, du registrerede dig med, og tjekke din spam-mappe."
+
+#: .\templates\users\password_reset_done.html:21
+msgid "Return to login"
+msgstr "Tilbage til login"
+
+#: .\templates\users\register.html:4 .\templates\users\register.html:17
+msgid "Create Account"
+msgstr "Opret konto"
+
+#: .\templates\users\register.html:18
+msgid "Join the knowledge base today"
+msgstr "Få adgang til vidensbasen i dag"
+
+#: .\templates\users\register.html:48
+msgid "Register Account"
+msgstr "Registrer konto"
+
+#: .\templates\users\register.html:51
+msgid ""
+"\n"
+"                This site is protected by reCAPTCHA and the Google \n"
+"                <a href=\"https://policies.google.com/privacy\">Privacy "
+"Policy</a> and \n"
+"                <a href=\"https://policies.google.com/terms\">Terms of "
+"Service</a> apply.\n"
+"                "
+msgstr ""
+"\n"
+"                Dette websted er beskyttet af reCAPTCHA, og Googles \n"
+"                <a href=\"https://policies.google.com/"
+"privacy\">privatlivspolitik</a> og \n"
+"                <a href=\"https://policies.google.com/terms\">servicevilkår</"
+"a> er gældende.\n"
+"                "
+
+#: .\templates\users\register.html:60
+msgid "Already have an account?"
+msgstr "Har du allerede en konto?"
+
+#: .\templates\users\register.html:60
+msgid "Sign in"
+msgstr "Log ind"
+
+#: .\users\models.py:15
+msgid "The Email must be set"
+msgstr "E-mailen skal angives"
+
+#: .\users\models.py:31
+msgid "Superuser must have is_staff=True."
+msgstr "Superbruger skal have is_staff=True."
+
+#: .\users\models.py:33
+msgid "Superuser must have is_superuser=True."
+msgstr "Superbruger skal have is_superuser=True."
+
+#: .\users\models.py:38
+msgid "email address"
+msgstr "e-mailadresse"
