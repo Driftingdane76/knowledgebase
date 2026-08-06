@@ -23,7 +23,21 @@ jobs:
           name: python-app
           path: |
             .
+            !.git/
+            !.github/
+            !.venv/
+            !venv/
             !antenv/
+            !__pycache__/
+            !*.sqlite3
+            !*.sqlite3-journal
+            !.env
+            !production_env
+            !.agents/
+            !AGENTS.md
+            !.cursorrules
+            !test_output_images/
+            !test_htmls/
 
   deploy:
     runs-on: ubuntu-latest
