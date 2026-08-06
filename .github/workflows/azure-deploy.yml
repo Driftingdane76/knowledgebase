@@ -47,6 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: python-app
+          path: .
       
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -55,3 +56,4 @@ jobs:
           app-name: 'kb-app-prod'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: .
