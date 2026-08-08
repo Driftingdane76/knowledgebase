@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Azure Deployment Guide 2026 - Django 5.2 App Service</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background-color: #f8fafc;
+    line-height: 1.55;
+    font-size: 10pt;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  .header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #ffffff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+  }
+
+  .header-card h1 {
+    margin: 0 0 6px 0;
+    font-size: 20pt;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .header-card .subtitle {
+    font-size: 10.5pt;
+    color: #93c5fd;
+    margin: 0 0 10px 0;
+    font-weight: 500;
+  }
+
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 8pt;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .section {
+    margin-bottom: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 20px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px 0;
+    font-size: 12.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 8px;
+  }
+
+  .section-number {
+    background: #2563eb;
+    color: #ffffff;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9pt;
+    font-weight: 700;
+  }
+
+  ol, ul {
+    margin: 0 0 12px 0;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 6px;
+  }
+
+  .code-block {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    margin: 10px 0;
+    overflow-x: auto;
+    border: 1px solid #1e293b;
+    white-space: pre;
+  }
+
+  .code-inline {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-family: 'Consolas', monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
+  }
+
+  .alert {
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 9pt;
+    line-height: 1.45;
+  }
+
+  .alert-warning {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+  }
+
+  .alert-info {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+  }
+
+  .alert-success {
+    background: #f0fdf4;
+    border-left: 4px solid #10b981;
+    color: #065f46;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 8.5pt;
+  }
+
+  th {
+    background: #f8fafc;
+    color: #334155;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid #cbd5e1;
+    font-weight: 700;
+  }
+
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  .footer-note {
+    font-size: 8pt;
+    color: #64748b;
+    text-align: center;
+    margin-top: 18px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header-card">
+  <h1>Azure Deployment Guide (2026 Edition)</h1>
+  <div class="subtitle">Step-by-Step CI/CD Setup for Django 5.2 on Azure App Service using GitHub Actions</div>
+  <div class="badge-row">
+    <span class="badge">Django 5.2 LTS</span>
+    <span class="badge">Python 3.11</span>
+    <span class="badge">Azure App Service Linux</span>
+    <span class="badge">GitHub Actions CI/CD</span>
+    <span class="badge">PostgreSQL Flexible Server</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">1</span>
+    Phase 1: Unlock the Azure Security Gate (SCM Basic Auth)
+  </div>
+  <p>In modern Azure releases, Basic Auth is restricted by default. SCM Basic Auth must be explicitly enabled to allow GitHub Actions Publish Profile authentication.</p>
+  <ol>
+    <li>Go to the <a href="https://portal.azure.com">Azure Portal</a> and navigate to your <strong>App Service</strong> instance.</li>
+    <li>In the left sidebar under <strong>Settings</strong>, click <strong>Configuration</strong> (or <strong>Environment variables</strong>).</li>
+    <li>Select the <strong>General settings</strong> tab at the top.</li>
+    <li>Scroll down to the <strong>Basic Auth</strong> section.</li>
+    <li>Find <strong>SCM Basic Auth Publishing Credentials</strong> and toggle it to <strong>On</strong>.</li>
+    <li>Click the <strong>Save</strong> button at the top of the blade.</li>
+  </ol>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">2</span>
+    Phase 2: Get the Master Key (Publish Profile)
+  </div>
+  <ol>
+    <li>In the Azure Portal, click <strong>Overview</strong> on the left-hand menu to return to your App Service dashboard.</li>
+    <li>In the top toolbar, click <strong>Get publish profile</strong>. This will download a <span class="code-inline">.PublishSettings</span> XML file to your computer.</li>
+    <li>Open this downloaded file in any text editor (Notepad, VS Code).</li>
+    <li><strong>Copy every single line of text</strong> inside this file.</li>
+  </ol>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">3</span>
+    Phase 3: Hide the Key in the GitHub Vault
+  </div>
+  <ol>
+    <li>Open your web browser and go to your GitHub repository: <span class="code-inline">https://github.com/Driftingdane76/knowledgebase</span></li>
+    <li>Click the <strong>Settings</strong> tab at the top of the repository.</li>
+    <li>On the left sidebar, scroll down to <strong>Security</strong>, click <strong>Secrets and variables</strong>, and select <strong>Actions</strong>.</li>
+    <li>Click the green <strong>New repository secret</strong> button.</li>
+    <li>Under <strong>Name</strong>, type the following exactly:
+      <div class="code-block">AZURE_WEBAPP_PUBLISH_PROFILE</div>
+    </li>
+    <li>Under <strong>Secret</strong>, paste the complete block of XML code you copied earlier.</li>
+    <li>Click <strong>Add secret</strong>.</li>
+  </ol>
+</div>
+
+<div class="page-break"></div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">4</span>
+    Phase 4: Mandatory Azure App Service Environment Settings
+  </div>
+  <p>In the Azure Portal, navigate to your App Service ➔ <strong>Settings</strong> ➔ <strong>Configuration</strong> (or <strong>Environment variables</strong>) and add these critical settings:</p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Setting Name</th>
+        <th>Value / Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>SCM_DO_BUILD_DURING_DEPLOYMENT</strong></td>
+        <td><code>true</code> <em>(Mandatory: enables Azure Oryx build to run <code>pip install -r requirements.txt</code>)</em></td>
+      </tr>
+      <tr>
+        <td><strong>SCM_COMMAND_IDLE_TIMEOUT</strong></td>
+        <td><code>1800</code> <em>(Ensures package downloads never hit 600s timeout)</em></td>
+      </tr>
+      <tr>
+        <td><strong>DJANGO_SETTINGS_MODULE</strong></td>
+        <td><code>core.settings</code></td>
+      </tr>
+      <tr>
+        <td><strong>DEBUG</strong></td>
+        <td><code>False</code></td>
+      </tr>
+      <tr>
+        <td><strong>SECRET_KEY</strong></td>
+        <td>Strong 50+ character random secret key for production</td>
+      </tr>
+      <tr>
+        <td><strong>DB_ENGINE</strong></td>
+        <td><code>django.db.backends.postgresql</code></td>
+      </tr>
+      <tr>
+        <td><strong>DB_NAME</strong> / <strong>DB_USER</strong> / <strong>DB_PASSWORD</strong></td>
+        <td>Azure Database for PostgreSQL credentials</td>
+      </tr>
+      <tr>
+        <td><strong>DB_HOST</strong> / <strong>DB_PORT</strong></td>
+        <td><code>&lt;your-server&gt;.postgres.database.azure.com</code> / <code>5432</code></td>
+      </tr>
+      <tr>
+        <td><strong>ALLOWED_HOSTS</strong></td>
+        <td><code>kb-app-prod-dve8cybhcpgvaed8.denmarkeast-01.azurewebsites.net</code></td>
+      </tr>
+      <tr>
+        <td><strong>REQUIRE_HTTPS</strong></td>
+        <td><code>True</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Startup Command</strong> (Under <em>Configuration ➔ General settings ➔ Startup Command</em>):</p>
+  <div class="code-block">gunicorn --bind=0.0.0.0 --timeout 600 --workers 4 core.wsgi:application</div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">5</span>
+    Phase 5: Create the GitHub Actions Workflow File
+  </div>
+  <ol>
+    <li>At the root of your project, create the folder structure: <span class="code-inline">.github/workflows/</span></li>
+    <li>Inside <span class="code-inline">workflows</span>, create a file named <span class="code-inline">azure-deploy.yml</span>.</li>
+    <li>Paste the exact code below into <span class="code-inline">azure-deploy.yml</span>:</li>
+  </ol>
+  
+<div class="code-block">name: Build and deploy Python app to Azure Web App - kb-app-prod
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: |
+            .
+            !.git/
+            !.github/
+            !.venv/
+            !venv/
+            !antenv/
+            !__pycache__/
+            !*.sqlite3
+            !*.sqlite3-journal
+            !.env
+            !production_env
+            !.agents/
+            !AGENTS.md
+            !.cursorrules
+            !test_output_images/
+            !test_htmls/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'kb-app-prod'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}</div>
+</div>
+
+<div class="page-break"></div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">6</span>
+    Phase 6: Arm the Pipeline & Deploy
+  </div>
+  <p>Run the following commands in <strong>Command Prompt (`cmd.exe`)</strong> to push the deployment pipeline to GitHub:</p>
+  <div class="code-block">git add requirements.txt .github/workflows/azure-deploy.yml
+git commit -m "Configure PyTorch CPU index for lightweight Azure deployment"
+git push origin main</div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">7</span>
+    Phase 7: Monitor the Launch & Execute Migrations
+  </div>
+  <ol>
+    <li>Go to your repository on <strong>GitHub.com</strong> and click the <strong>Actions</strong> tab.</li>
+    <li>Click on the running workflow to watch live build and deployment logs.</li>
+    <li>Once the jobs complete and turn into <strong>green checkmarks</strong>, navigate to your Azure web address:
+      <div class="code-block">https://kb-app-prod-dve8cybhcpgvaed8.denmarkeast-01.azurewebsites.net</div>
+    </li>
+    <li><strong>Run Database Migrations</strong>: Open the <strong>SSH Console</strong> in Azure Portal (under <em>Development Tools ➔ SSH</em>) and execute:
+      <div class="code-block">python manage.py migrate</div>
+    </li>
+  </ol>
+  <div class="alert alert-success">
+    <strong>Congratulations!</strong> Your Django 5.2 application is now live on Microsoft Azure with automated CI/CD continuous deployment.
+  </div>
+</div>
+
+<div class="footer-note">
+  Q&amp;A Knowledgebase | Django 5.2 Production Architecture | Verified 2026
+</div>
+
+</div>
+</body>
+</html>

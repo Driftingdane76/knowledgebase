@@ -1,0 +1,194 @@
+%PDF-1.4
+%âãÏÓ
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 7 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> >>
+endobj
+7 0 obj
+<< /Length 2320 >>
+stream
+0.06 0.09 0.16 rg 30 710 535.28 100 re f
+0.15 0.39 0.92 rg 30 805 535.28 5 re f
+BT /F2 18 Tf 1 1 1 rg 45 775 Td (Azure Deployment Guide (2026 Edition)) Tj ET
+BT /F1 10 Tf 0.58 0.77 0.99 rg 45 755 Td (Step-by-Step CI/CD Setup for Django 5.2 on Azure App Service using GitHub Actions) Tj ET
+BT /F2 8 Tf 1 1 1 rg 45 730 Td ([ Django 5.2 LTS ]  [ Python 3.11 ]  [ Azure App Service Linux ]  [ PostgreSQL Flexible Server ]) Tj ET
+0.96 0.97 0.98 rg 30 520 535.28 175 re f
+0.89 0.91 0.94 RG 1 w 30 520 535.28 175 re S
+0.15 0.39 0.92 rg 45 665 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 670 Td (1) Tj ET
+BT /F2 12 Tf 0.06 0.09 0.16 rg 70 670 Td (Phase 1: Unlock Azure Security Gate (SCM Basic Auth)) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 645 Td (1. Log into the Azure Portal (https://portal.azure.com) and open your App Service.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 629 Td (2. In the left sidebar under 'Settings', click 'Configuration' (or 'Environment variables').) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 613 Td (3. Click the 'General settings' tab at the top.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 597 Td (4. Scroll down to the 'Basic Auth' section.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 581 Td (5. Toggle 'SCM Basic Auth Publishing Credentials' to ON.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 565 Td (6. Click the 'Save' button at the top of the blade.) Tj ET
+0.94 0.96 1.0 rg 45 530 505.28 28 re f
+0.23 0.51 0.96 RG 1 w 45 530 505.28 28 re S
+BT /F2 8.5 Tf 0.12 0.25 0.69 rg 55 540 Td (Note: In 2026, Basic Auth is off by default. Enabling SCM Basic Auth is mandatory for Publish Profiles.) Tj ET
+0.96 0.97 0.98 rg 30 330 535.28 175 re f
+0.89 0.91 0.94 RG 1 w 30 330 535.28 175 re S
+0.15 0.39 0.92 rg 45 475 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 480 Td (2) Tj ET
+BT /F2 12 Tf 0.06 0.09 0.16 rg 70 480 Td (Phase 2: Get Master Key (Publish Profile)) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 455 Td (1. In Azure Portal, click 'Overview' on the left menu to return to App Service dashboard.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 439 Td (2. On the top toolbar, click 'Get publish profile' to download '<app-name>.PublishSettings'.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 423 Td (3. Open this downloaded file in any text editor (Notepad, VS Code).) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 407 Td (4. Copy EVERY SINGLE line of XML text inside this file (Ctrl+A, Ctrl+C).) Tj ET
+0.96 0.97 0.98 rg 30 140 535.28 175 re f
+0.89 0.91 0.94 RG 1 w 30 140 535.28 175 re S
+0.15 0.39 0.92 rg 45 285 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 290 Td (3) Tj ET
+BT /F2 12 Tf 0.06 0.09 0.16 rg 70 290 Td (Phase 3: Hide Key in GitHub Secrets Vault) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 265 Td (1. Open your browser to your GitHub repo: https://github.com/Driftingdane76/knowledgebase) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 249 Td (2. Click the 'Settings' tab at the top of the repository.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 233 Td (3. In the left sidebar under 'Security', click 'Secrets and variables' -> 'Actions'.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 217 Td (4. Click the green 'New repository secret' button.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 201 Td (5. Under Name, type exactly: AZURE_WEBAPP_PUBLISH_PROFILE) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 185 Td (6. Under Secret, paste the complete block of XML code copied from Phase 2.) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 169 Td (7. Click 'Add secret'.) Tj ET
+BT /F1 8 Tf 0.4 0.45 0.55 rg 240 30 Td (Page 1 of 3 - Azure Deployment Guide 2026) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 9 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> >>
+endobj
+9 0 obj
+<< /Length 2640 >>
+stream
+0.06 0.09 0.16 rg 30 780 535.28 35 re f
+BT /F2 12 Tf 1 1 1 rg 45 792 Td (Phase 4: Mandatory Azure App Service Environment Settings) Tj ET
+0.96 0.97 0.98 rg 30 440 535.28 325 re f
+0.89 0.91 0.94 RG 1 w 30 440 535.28 325 re S
+BT /F2 10 Tf 0.06 0.09 0.16 rg 45 745 Td (Configure under: App Service -> Settings -> Configuration / Environment variables) Tj ET
+0.91 0.93 0.96 rg 45 715 505.28 20 re f
+BT /F2 9 Tf 0.1 0.15 0.25 rg 55 721 Td (Environment Variable Name) Tj 240 0 Td (Required Production Value / Purpose) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 695 Td (SCM_DO_BUILD_DURING_DEPLOYMENT) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 695 Td (true  \(CRITICAL: Triggers pip install -r requirements.txt\)) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 676 Td (DJANGO_SETTINGS_MODULE) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 676 Td (core.settings) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 657 Td (DEBUG) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 657 Td (False) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 638 Td (SECRET_KEY) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 638 Td (<50+ random characters for cryptographic security>) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 619 Td (DB_ENGINE) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 619 Td (django.db.backends.postgresql) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 600 Td (DB_NAME) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 600 Td (<your-azure-postgresql-database-name>) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 581 Td (DB_USER / DB_PASSWORD) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 581 Td (<your-database-admin-username> / <password>) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 562 Td (DB_HOST / DB_PORT) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 562 Td (<your-server>.postgres.database.azure.com / 5432) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 543 Td (ALLOWED_HOSTS) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 543 Td (<your-app-name>.azurewebsites.net) Tj ET
+BT /F2 8.5 Tf 0.06 0.09 0.16 rg 55 524 Td (REQUIRE_HTTPS) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.35 rg 295 524 Td (True  \(Enforces secure HTTPS cookies behind SSL\)) Tj ET
+0.96 0.97 0.98 rg 30 310 535.28 115 re f
+0.89 0.91 0.94 RG 1 w 30 310 535.28 115 re S
+0.15 0.39 0.92 rg 45 395 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 400 Td (!) Tj ET
+BT /F2 11 Tf 0.06 0.09 0.16 rg 70 400 Td (Mandatory Startup Command \(General Settings -> Startup Command\)) Tj ET
+0.06 0.09 0.16 rg 45 330 505.28 35 re f
+BT /F3 8.5 Tf 0.95 0.98 1.0 rg 55 343 Td (gunicorn --bind=0.0.0.0 --timeout 600 --workers 4 core.wsgi:application) Tj ET
+0.96 0.97 0.98 rg 30 80 535.28 215 re f
+0.89 0.91 0.94 RG 1 w 30 80 535.28 215 re S
+0.15 0.39 0.92 rg 45 265 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 270 Td (5) Tj ET
+BT /F2 12 Tf 0.06 0.09 0.16 rg 70 270 Td (Phase 5: Create .github/workflows/azure-deploy.yml) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 245 Td (1. In your local repository root, create folder: .github/workflows/) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 229 Td (2. Inside workflows, create file: azure-deploy.yml) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 213 Td (3. Paste the production-ready YAML pipeline specification \(detailed on Page 3\).) Tj ET
+BT /F1 9.5 Tf 0.12 0.16 0.23 rg 45 197 Td (4. Replace 'YOUR_AZURE_APP_NAME' with your actual Azure App Service resource name.) Tj ET
+BT /F1 8 Tf 0.4 0.45 0.55 rg 240 30 Td (Page 2 of 3 - Azure Deployment Guide 2026) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Contents 11 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> >>
+endobj
+11 0 obj
+<< /Length 2690 >>
+stream
+0.06 0.09 0.16 rg 30 780 535.28 35 re f
+BT /F2 12 Tf 1 1 1 rg 45 792 Td (Production Workflow YAML & Deployment Execution) Tj ET
+0.06 0.09 0.16 rg 30 275 535.28 490 re f
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 745 Td (name: Build and deploy Python app to Azure Web App) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 733 Td (on:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 721 Td (  push:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 709 Td (    branches: [ main ]) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 697 Td (  workflow_dispatch:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 685 Td (jobs:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 673 Td (  build:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 661 Td (    runs-on: ubuntu-latest) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 649 Td (    steps:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 637 Td (      - uses: actions/checkout@v4) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 625 Td (      - uses: actions/setup-python@v5) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 613 Td (        with: { python-version: '3.11' }) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 601 Td (      - name: Upload artifact for deployment) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 589 Td (        uses: actions/upload-artifact@v4) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 577 Td (        with:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 565 Td (          name: python-app) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 553 Td (          path: |) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 541 Td (            .) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 529 Td (            !.git/ !.venv/ !venv/ !antenv/ !__pycache__/) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 517 Td (            !*.sqlite3 !.env !production_env !.agents/ !AGENTS.md) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 505 Td (            !.cursorrules !test_output_images/ !test_htmls/) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 493 Td (  deploy:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 481 Td (    runs-on: ubuntu-latest) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 469 Td (    needs: build) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 457 Td (    environment: { name: 'Production' }) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 445 Td (    steps:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 433 Td (      - uses: actions/download-artifact@v4) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 421 Td (        with: { name: python-app }) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 409 Td (      - name: 'Deploy to Azure Web App') Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 397 Td (        uses: azure/webapps-deploy@v3) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 385 Td (        with:) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 373 Td (          app-name: 'YOUR_AZURE_APP_NAME'  # Replace with actual App Service name) Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 361 Td (          slot-name: 'Production') Tj ET
+BT /F3 7.5 Tf 0.95 0.98 1.0 rg 45 349 Td (          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}) Tj ET
+0.96 0.97 0.98 rg 30 70 535.28 190 re f
+0.89 0.91 0.94 RG 1 w 30 70 535.28 190 re S
+0.15 0.39 0.92 rg 45 230 18 18 re f
+BT /F2 10 Tf 1 1 1 rg 51 235 Td (6) Tj ET
+BT /F2 12 Tf 0.06 0.09 0.16 rg 70 235 Td (Phase 6: Commit, Deploy & Execute Database Migrations) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.23 rg 45 210 Td (1. In Command Prompt \(cmd.exe\), commit and push the pipeline:) Tj ET
+BT /F3 8 Tf 0.06 0.09 0.16 rg 55 195 Td (git add .github/workflows/azure-deploy.yml && git commit -m "Add pipeline" && git push) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.23 rg 45 178 Td (2. Monitor real-time logs under the 'Actions' tab on GitHub.) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.23 rg 45 162 Td (3. Once deployment turns GREEN, run database migrations in Azure Portal:) Tj ET
+BT /F3 8 Tf 0.06 0.09 0.16 rg 55 147 Td (App Service -> Development Tools -> SSH -> type: python manage.py migrate) Tj ET
+BT /F1 9 Tf 0.12 0.16 0.23 rg 45 130 Td (4. Your application is now live at: https://<your-app-name>.azurewebsites.net) Tj ET
+BT /F1 8 Tf 0.4 0.45 0.55 rg 240 30 Td (Page 3 of 3 - Azure Deployment Guide 2026) Tj ET
+endstream
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000139 00000 n 
+0000000213 00000 n 
+0000000292 00000 n 
+0000000366 00000 n 
+0000000511 00000 n 
+0000002901 00000 n 
+0000003046 00000 n 
+0000005756 00000 n 
+0000005902 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R >>
+startxref
+8662
+%%EOF
