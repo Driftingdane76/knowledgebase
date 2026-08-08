@@ -22,6 +22,11 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies in GitHub Runner (16GB RAM)
+        run: |
+          pip install --upgrade pip
+          pip install --target=".python_packages/lib/site-packages" -r requirements.txt
+
       - name: Create Clean Deployment Archive
         run: |
           zip -r deploy.zip . -x "*.git*" "*.github*" "*.venv*" "*venv*" "*antenv*" "*__pycache__*" "*.sqlite3*" "*.env*" "*test_output_images*" "*test_htmls*" ".agents*" "AGENTS.md" ".cursorrules"
