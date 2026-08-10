@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="da" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exact Environment Parity Test: Original vs Test</title>
+
+    <!-- Google Fonts: Inter + JetBrains Mono (Identical to base.html) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 & FontAwesome (Local files identical to base.html) -->
+    <link rel="stylesheet" href="static/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome/all.min.css">
+
+    <!-- App Styles (Identical to base.html) -->
+    <link rel="stylesheet" href="static/css/app.css">
+
+    <style>
+        body {
+            background-color: var(--bs-body-bg, #f8fafc);
+            padding: 24px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .parity-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .parity-header {
+            padding: 12px 18px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .parity-body {
+            padding: 18px;
+        }
+        .comparison-col {
+            border-right: 1px solid #e2e8f0;
+        }
+        .comparison-col:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid px-3">
+    <div class="mb-4">
+        <h3 class="fw-bold text-slate-800 d-flex align-items-center gap-2">
+            <i class="fa-solid fa-microchip icon-indigo"></i>
+            Exact Environment Parity Test: Live App vs Standalone Logic
+        </h3>
+        <p class="text-secondary small mb-0">
+            Running with the exact same Bootstrap 5.3 layout, Inter font, <code>app.css</code> stylesheets, <code>kb-row</code> table structure, and media image coordinates.
+        </p>
+    </div>
+
+    <!-- Active Search Bar Simulation -->
+    <div class="parity-card mb-4">
+        <div class="parity-header bg-body">
+            <div class="d-flex align-items-center gap-2 w-100">
+                <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+                <input type="text" id="shared-search-input" class="form-control form-control-sm w-50" value="Mere end 100 resultater" oninput="runAllTests()">
+                <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Advarsel')">Query: "Advarsel"</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Mere end 100 resultater')">Query: "Mere end 100 resultater"</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Godkendelsesflowet')">Query: "Godkendelsesflowet"</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Row 1: Full DOM Table Row (Live App Layout) -->
+    <div class="parity-card">
+        <div class="parity-header">
+            <span>Case 1: Full <code>kb-row</code> DOM Structure (Live App Layout)</span>
+            <span class="badge bg-primary">Full Environment</span>
+        </div>
+        <div class="parity-body p-0">
+            <div class="kb-row row g-0 m-0" id="row-demo-1">
+                <!-- Meta Col -->
+                <div class="kb-cell col-12 col-md-1">
+                    <div class="d-flex flex-column gap-2 w-100 align-items-start">
+                        <span class="badge-date fw-semibold" id="meta-date">09/08/2026</span>
+                        <span class="badge-user" id="meta-user">@DKquality</span>
+                    </div>
+                </div>
+
+                <!-- Question Col with Screenshot & Highlight Layer -->
+                <div class="kb-cell col-12 col-md-5">
+                    <div class="w-100">
+                        <p class="mb-1 lh-base quest-text-render" id="demo-question-text">
+                            Kunden ringer ind angående godkendelse. Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Erstatningen er sendt til kundens NemKonto. Mere end 100 resultater fundet i systemet.
+                        </p>
+                        <div class="d-flex flex-column gap-1 mt-2">
+                            <div class="screenshot-container mb-2 position-relative">
+                                <img src="media/page_images/pro_snippet_1.png" class="img-screenshot img-fluid w-100" onerror="this.src='test_htmls/mock_crm_dashboard.png'" alt="Screenshot">
+                                <div class="ocr-highlight-layer position-absolute top-0 start-0 w-100 h-100" id="ocr-layer-1" style="pointer-events: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resolution Col -->
+                <div class="kb-cell col-12 col-md-5">
+                    <div class="resolution-container w-100">
+                        <div class="cell-hover-actions">
+                            <button class="btn-copy-resolution"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                        <div class="w-100 font-mono lh-base resolution-text-render" id="demo-resolution-text">
+                            Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Mere end 100 resultater opstod under batch-kørslen. Systemet er opdateret.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Col -->
+                <div class="kb-cell col-12 col-md-1">
+                    <div class="d-flex flex-column gap-2 w-100 align-items-start">
+                        <span class="badge-date fw-semibold">09/08/2026</span>
+                        <span class="badge-user">@DKquality</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Row 2: Side-by-Side Comparison of Text Highlighting & OCR Math -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="parity-card h-100">
+                <div class="parity-header bg-danger-subtle text-danger-emphasis">
+                    <span><i class="fa-solid fa-triangle-exclamation me-1"></i> Original Logic (Linear Math & Default CSS)</span>
+                </div>
+                <div class="parity-body">
+                    <h6 class="fw-bold mb-2">1. Text Highlight Output:</h6>
+                    <div class="p-3 bg-light rounded border mb-3" id="orig-text-output"></div>
+
+                    <h6 class="fw-bold mb-2">2. OCR Coordinate Calculation:</h6>
+                    <pre class="bg-dark text-white p-2 rounded small mb-0" id="orig-ocr-coords"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="parity-card h-100">
+                <div class="parity-header bg-success-subtle text-success-emphasis">
+                    <span><i class="fa-solid fa-circle-check me-1"></i> Test Logic (Typographic Weighting & Pill CSS)</span>
+                </div>
+                <div class="parity-body">
+                    <h6 class="fw-bold mb-2">1. Text Highlight Output:</h6>
+                    <div class="p-3 bg-light rounded border mb-3" id="test-text-output"></div>
+
+                    <h6 class="fw-bold mb-2">2. OCR Coordinate Calculation:</h6>
+                    <pre class="bg-dark text-white p-2 rounded small mb-0" id="test-ocr-coords"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Raw OCR tokens matching real Florence-2 extraction
+    const sampleOcrData = [
+        { "text": "47 - Advarsel", "left": 10.0, "top": 15.0, "width": 45.0, "height": 8.0 },
+        { "text": "g #88648 - Mere end 100 resultater", "left": 10.0, "top": 35.0, "width": 75.0, "height": 8.0 }
+    ];
+
+    const rawQuestion = "Kunden ringer ind angående godkendelse. Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Erstatningen er sendt til kundens NemKonto. Mere end 100 resultater fundet i systemet.";
+    const rawResolution = "Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Mere end 100 resultater opstod under batch-kørslen. Systemet er opdateret.";
+
+    function escapeHTML(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // --- Original Logic (from live app.js) ---
+    function origHighlightMatch(text, query) {
+        let safeText = escapeHTML(text);
+        if (query && query.trim()) {
+            const trimmed = query.trim();
+            const escapedPhrase = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const words = trimmed.split(/\s+/).filter(t => t.length > 0).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            const pattern = escapedPhrase.includes(' ')
+                ? `(?:\\b${escapedPhrase}\\b|${escapedPhrase}|(?:\\b(?:${words.join('|')})\\b))`
+                : `(?:\\b${escapedPhrase}\\b|${escapedPhrase})`;
+            safeText = safeText.replace(new RegExp(`(${pattern})(?![^<]*>)`, 'gi'), '<mark class="search-hit">$1</mark>');
+        }
+        return safeText;
+    }
+
+    function origGetOcrBoxes(ocrData, query) {
+        if (!query || !query.trim() || !ocrData) return [];
+        const trimmed = query.trim().toLowerCase();
+        const terms = trimmed.split(/\s+/).filter(t => t.length > 0);
+        const boxes = [];
+        ocrData.forEach(item => {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const totalLen = rawText.length || 1;
+            const targets = (trimmed.length > 2 && lowerText.includes(trimmed)) ? [trimmed] : terms;
+            targets.forEach(target => {
+                let startIdx = 0;
+                while ((startIdx = lowerText.indexOf(target, startIdx)) !== -1) {
+                    const endIdx = startIdx + target.length;
+                    const subLeft = item.left + (startIdx / totalLen) * item.width;
+                    const subWidth = Math.max((target.length / totalLen) * item.width, 2);
+                    boxes.push({
+                        left: Math.round(subLeft * 100) / 100,
+                        top: item.top,
+                        width: Math.round(subWidth * 100) / 100,
+                        height: item.height
+                    });
+                    startIdx = endIdx;
+                }
+            });
+        });
+        return boxes;
+    }
+
+    // --- Fixed Test Logic ---
+    function getCharWeight(ch) {
+        if (ch === ' ') return 0.3;
+        if (/[-,.:;!?'"()\[\]\/\\]/.test(ch)) return 0.35;
+        if (/[0-9]/.test(ch)) return 0.55;
+        if (/[iljtfr]/.test(ch)) return 0.38;
+        if (/[MWmw@%ÆØÅ]/.test(ch)) return 0.95;
+        if (/[A-Z]/.test(ch)) return 0.75;
+        return 0.55;
+    }
+
+    function calculateWeightedOffset(fullText, startIdx, matchLen) {
+        let totalWeight = 0;
+        for (let i = 0; i < fullText.length; i++) totalWeight += getCharWeight(fullText[i]);
+        if (totalWeight === 0) totalWeight = 1;
+
+        let prefixWeight = 0;
+        for (let i = 0; i < startIdx; i++) prefixWeight += getCharWeight(fullText[i]);
+
+        let matchWeight = 0;
+        for (let i = startIdx; i < startIdx + matchLen; i++) matchWeight += getCharWeight(fullText[i]);
+
+        return {
+            leftRatio: prefixWeight / totalWeight,
+            widthRatio: matchWeight / totalWeight
+        };
+    }
+
+    function testGetOcrBoxes(ocrData, query) {
+        if (!query || !query.trim() || !ocrData) return [];
+        const trimmed = query.trim().toLowerCase();
+        const terms = trimmed.split(/\s+/).filter(t => t.length > 0);
+        const boxes = [];
+        ocrData.forEach(item => {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const targets = (trimmed.length > 2 && lowerText.includes(trimmed)) ? [trimmed] : terms;
+            targets.forEach(target => {
+                let startIdx = 0;
+                while ((startIdx = lowerText.indexOf(target, startIdx)) !== -1) {
+                    const endIdx = startIdx + target.length;
+                    const { leftRatio, widthRatio } = calculateWeightedOffset(rawText, startIdx, target.length);
+                    const paddingPct = Math.min(item.width * 0.03, 1.5);
+                    const calculatedLeft = item.left + (leftRatio * item.width);
+                    const calculatedWidth = widthRatio * item.width;
+                    const subLeft = Math.max(item.left, calculatedLeft - paddingPct);
+                    const subWidth = Math.min(item.width, calculatedWidth + (2 * paddingPct));
+                    boxes.push({
+                        left: Math.round(subLeft * 100) / 100,
+                        top: item.top,
+                        width: Math.round(Math.max(subWidth, 2) * 100) / 100,
+                        height: item.height
+                    });
+                    startIdx = endIdx;
+                }
+            });
+        });
+        return boxes;
+    }
+
+    function setQuery(q) {
+        document.getElementById('shared-search-input').value = q;
+        runAllTests();
+    }
+
+    function runAllTests() {
+        const q = document.getElementById('shared-search-input').value;
+
+        // 1. Update Live Table Row
+        document.getElementById('demo-question-text').innerHTML = origHighlightMatch(rawQuestion, q);
+        document.getElementById('demo-resolution-text').innerHTML = origHighlightMatch(rawResolution, q);
+
+        const ocrLayer = document.getElementById('ocr-layer-1');
+        ocrLayer.innerHTML = '';
+        const boxes = testGetOcrBoxes(sampleOcrData, q);
+        boxes.forEach(b => {
+            const div = document.createElement('div');
+            div.className = 'ocr-highlight-box';
+            div.style.left = b.left + '%';
+            div.style.top = b.top + '%';
+            div.style.width = b.width + '%';
+            div.style.height = b.height + '%';
+            ocrLayer.appendChild(div);
+        });
+
+        // 2. Update Side-by-Side Comparison
+        document.getElementById('orig-text-output').innerHTML = origHighlightMatch(rawQuestion, q);
+        document.getElementById('test-text-output').innerHTML = origHighlightMatch(rawQuestion, q);
+
+        document.getElementById('orig-ocr-coords').textContent = JSON.stringify(origGetOcrBoxes(sampleOcrData, q), null, 2);
+        document.getElementById('test-ocr-coords').textContent = JSON.stringify(boxes, null, 2);
+    }
+
+    window.onload = runAllTests;
+</script>
+
+</body>
+</html>

@@ -623,15 +623,17 @@ body.sidebar-collapsed .sidebar-aside {
     pointer-events: none;
 }
 
-.ocr-highlight-box {
-    position: absolute;
-    background: rgba(234, 179, 8, 0.25);
-    border: 1px solid rgba(234, 179, 8, 0.35);
+
+.search-hit {
+    background-color: #fef08a !important;
+    color: #713f12 !important;
+    padding: 1px 4px;
     border-radius: 3px;
-    pointer-events: none;
-    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.25); /* Sharp 2px padding expansion */
-    z-index: 5;
+    font-weight: 700;
+    border: 1px solid #facc15;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
+
 
 .img-thumb {
     width: 36px;
@@ -670,56 +672,9 @@ body.sidebar-collapsed .sidebar-aside {
     display: flex;
 }
 
-/* ---- SEARCH HIT HIGHLIGHT ---- */
-mark.search-hit {
-    background: rgba(234, 179, 8, 0.25);
-    color: inherit;
-    padding: 0 2px;
-    border-radius: 3px;
-    font-weight: 600;
-    border: 1px solid rgba(234, 179, 8, 0.35);
-    transition: all 0.2s ease;
-}
 
-mark.active-search-hit {
-    background: rgba(234, 179, 8, 0.7);
-    border-color: #ca8a04;
-    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.3);
-    color: #fff;
-    z-index: 10;
-}
 
-.ocr-highlight-box.active-search-hit {
-    background: rgba(234, 179, 8, 0.5); /* Semi-transparent amber to keep text readable */
-    border: 1px solid #ca8a04;
-    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.4); /* Sharp 3px active focus ring */
-    z-index: 10;
-}
 
-[data-bs-theme="dark"] mark.search-hit {
-    background: rgba(234, 179, 8, 0.2);
-    border-color: rgba(234, 179, 8, 0.3);
-}
-
-[data-bs-theme="dark"] mark.active-search-hit {
-    background: rgba(234, 179, 8, 0.8);
-    color: #fff;
-    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.25);
-    z-index: 10;
-}
-
-[data-bs-theme="dark"] .ocr-highlight-box {
-    background: rgba(234, 179, 8, 0.2);
-    border-color: rgba(234, 179, 8, 0.3);
-    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.2);
-}
-
-[data-bs-theme="dark"] .ocr-highlight-box.active-search-hit {
-    background: rgba(234, 179, 8, 0.6);
-    border-color: #ca8a04;
-    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.4);
-    z-index: 10;
-}
 
 .search-nav {
     position: absolute;

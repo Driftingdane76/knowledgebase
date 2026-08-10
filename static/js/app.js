@@ -542,21 +542,118 @@
             safeText = safeText.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
 
             if (query && query.trim()) {
-                const terms = query.split(/\s+/).filter(t => t.length > 0).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-                if (terms.length > 0) {
-                    const regex = new RegExp('(' + terms.join('|') + ')(?![^<]*>)', 'gi');
-                    safeText = safeText.replace(regex, '<mark class="search-hit">$1</mark>');
+                const trimmedQuery = query.trim();
+                const escapedPhrase = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                
+                const phraseRegex = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + escapedPhrase + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
+                
+                if (phraseRegex.test(safeText)) {
+                    const replaceGlobal = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + escapedPhrase + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
+                    safeText = safeText.replace(replaceGlobal, '$1<span class="search-hit">$2</span>');
+                } else if (!trimmedQuery.includes(' ')) {
+                    const terms = trimmedQuery.split(/\s+/).filter(t => t.length >= 2).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                    if (terms.length > 0) {
+                        const regex = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + terms.join('|') + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
+                        safeText = safeText.replace(regex, '$1<span class="search-hit">$2</span>');
+                    }
                 }
             }
 
             return safeText;
         }
 
-        function applySearchMark(escapedText, query) {
-            if (!query || !query.trim()) return escapedText;
-            const terms = query.split(/\s+/).filter(t => t.length > 0).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-            if (!terms.length) return escapedText;
-            return escapedText.replace(new RegExp('(' + terms.join('|') + ')', 'gi'), '<mark class="search-hit">$1</mark>');
+        function getCharWeight(ch) {
+            if (ch === ' ') return 0.30;
+            if (/[-.,:;!?'"()\[\]\/\\_]/.test(ch)) return 0.32;
+            if (/[0-9]/.test(ch)) return 0.55;
+            if (/[iljtfr]/.test(ch)) return 0.38;
+            if (/[MWmw@%ÆØÅæøå]/.test(ch)) return 0.95;
+            if (/[A-Z]/.test(ch)) return 0.75;
+            return 0.55;
+        }
+
+        function calculateOffset(fullText, startIdx, matchLen) {
+            let total = 0;
+            for (let i = 0; i < fullText.length; i++) total += getCharWeight(fullText[i]);
+            if (total === 0) total = 1;
+            
+            let prefix = 0;
+            for (let i = 0; i < startIdx; i++) prefix += getCharWeight(fullText[i]);
+            
+            let match = 0;
+            for (let i = startIdx; i < startIdx + matchLen; i++) match += getCharWeight(fullText[i]);
+            
+            return { leftRatio: prefix / total, widthRatio: match / total };
+        }
+
+        function getOcrHighlightBoxes(ocrData, query) {
+            if (!query || !query.trim() || !ocrData) return [];
+            const trimmed = query.trim().toLowerCase();
+            const terms = trimmed.split(/\s+/).filter(t => t.length >= 2);
+            const rawBoxes = [];
+            
+            ocrData.forEach(item => {
+                const raw = item.text || '';
+                const lower = raw.toLowerCase();
+                const targets = (trimmed.length > 2 && lower.includes(trimmed)) ? [trimmed] : terms;
+
+                targets.forEach(target => {
+                    let startIdx = 0;
+                    while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
+                        const endIdx = startIdx + target.length;
+                        
+                        const { leftRatio, widthRatio } = calculateOffset(raw, startIdx, target.length);
+                        const paddingPct = Math.min(item.width * 0.035, 1.8);
+                        
+                        const calcLeft = item.left + (leftRatio * item.width);
+                        const calcWidth = widthRatio * item.width;
+                        
+                        const subLeft = Math.max(item.left, calcLeft - paddingPct);
+                        const subWidth = Math.min(item.width, calcWidth + (2 * paddingPct));
+
+                        rawBoxes.push({
+                            left: subLeft,
+                            top: item.top - 0.5,
+                            right: subLeft + Math.max(subWidth, 2),
+                            bottom: item.top + item.height + 0.5,
+                            top_orig: item.top,
+                            text: raw.substring(startIdx, endIdx)
+                        });
+                        startIdx = endIdx;
+                    }
+                });
+            });
+
+            if (rawBoxes.length === 0) return [];
+            
+            // Sort top-to-bottom, left-to-right
+            rawBoxes.sort((a, b) => (Math.abs(a.top_orig - b.top_orig) < 2 ? a.left - b.left : a.top_orig - b.top_orig));
+
+            const mergedBoxes = [];
+            let currentBox = { ...rawBoxes[0] };
+
+            for (let i = 1; i < rawBoxes.length; i++) {
+                const box = rawBoxes[i];
+                // Check if on the same line (top diff < 2%) and adjacent horizontally (gap < 3%)
+                if (Math.abs(currentBox.top_orig - box.top_orig) < 2 && box.left - currentBox.right < 3) {
+                    currentBox.right = Math.max(currentBox.right, box.right);
+                    currentBox.top = Math.min(currentBox.top, box.top);
+                    currentBox.bottom = Math.max(currentBox.bottom, box.bottom);
+                    currentBox.text += ' ' + box.text;
+                } else {
+                    mergedBoxes.push(currentBox);
+                    currentBox = { ...box };
+                }
+            }
+            mergedBoxes.push(currentBox);
+
+            return mergedBoxes.map(b => ({
+                left: parseFloat(b.left.toFixed(2)),
+                top: parseFloat(b.top.toFixed(2)),
+                width: parseFloat((b.right - b.left).toFixed(2)),
+                height: parseFloat((b.bottom - b.top).toFixed(2)),
+                text: b.text || ''
+            }));
         }
 
         const HL_SWATCH_COLORS = [
@@ -994,15 +1091,19 @@
             overlayContainer.innerHTML = '';
             const q = searchInput.value.toLowerCase().trim();
             if (q && img.ocrData && img.ocrData.length) {
-                const terms = q.split(/\s+/).filter(t => t.length > 0);
-                img.ocrData.forEach(word => {
-                    if (terms.some(term => (word.text || '').toLowerCase().includes(term))) {
-                        const box = document.createElement('div');
-                        box.className = 'ocr-highlight-box';
-                        box.style.left = `${word.left}%`; box.style.top = `${word.top}%`;
-                        box.style.width = `${word.width}%`; box.style.height = `${word.height}%`;
-                        overlayContainer.appendChild(box);
-                    }
+                getOcrHighlightBoxes(img.ocrData, q).forEach(b => {
+                    const box = document.createElement('div');
+                    box.className = 'search-hit position-absolute';
+                    box.style.left = `${b.left}%`; box.style.top = `${b.top}%`;
+                    box.style.width = `${b.width}%`; box.style.height = `${b.height}%`;
+                    box.style.display = 'flex';
+                    box.style.alignItems = 'center';
+                    box.style.justifyContent = 'center';
+                    box.style.whiteSpace = 'nowrap';
+                    box.style.overflow = 'hidden';
+                    box.style.fontSize = 'min(1.5vw, 12px)';
+                    box.textContent = b.text;
+                    overlayContainer.appendChild(box);
                 });
             }
             imageOverlay.classList.add('show');
@@ -1218,7 +1319,11 @@
         // ==========================================
         window.selectCategory = function (catId) {
             if (editingRowId) saveActiveRowChanges();
-            selectedCategoryId = catId; currentPage = 1; fetchSearch();
+            searchInput.value = '';
+            searchClearBtn.style.display = 'none';
+            selectedCategoryId = catId;
+            currentPage = 1;
+            fetchSearch();
         };
 
         function addCategory() {
@@ -1335,17 +1440,23 @@
                 container.innerHTML = '<span class="text-secondary text-xs">No tags yet.</span>';
                 return;
             }
+            const currentQ = searchInput.value.trim().toLowerCase();
             activeTrendingTags.forEach(tag => {
                 const badge = document.createElement('span');
-                badge.className = 'badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1 cursor-pointer';
-                badge.style.fontSize = '0.75rem';
+                const isSelected = currentQ === tag.name.toLowerCase();
+                badge.className = isSelected
+                    ? 'badge rounded-pill bg-success text-white border border-success px-2 py-1 cursor-pointer text-xs shadow-sm'
+                    : 'badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1 cursor-pointer text-xs';
                 badge.textContent = `${tag.name} (${tag.count})`;
-                badge.title = `Search for ${tag.name}`;
+                badge.title = isSelected ? `Fjern filter: ${tag.name}` : `Filtrér efter ${tag.name}`;
                 badge.onclick = () => {
-                    const currentQ = searchInput.value.trim();
-                    if (!currentQ.includes(tag.name)) {
-                        searchInput.value = currentQ ? currentQ + ' ' + tag.name : tag.name;
+                    if (isSelected) {
+                        searchInput.value = '';
+                    } else {
+                        searchInput.value = tag.name;
+                        selectedCategoryId = null;
                     }
+                    searchClearBtn.style.display = searchInput.value.length > 0 ? 'inline-block' : 'none';
                     currentPage = 1;
                     fetchSearch();
                 };
@@ -1422,11 +1533,8 @@
                 let thumbsView = (page.images || []).map(img => {
                     let hlBoxes = '';
                     if (q && img.ocrData && img.ocrData.length) {
-                        const terms = q.split(/\s+/).filter(t => t.length > 0);
-                        img.ocrData.forEach(word => {
-                            if (terms.some(term => (word.text || '').toLowerCase().includes(term))) {
-                                hlBoxes += '<div class="ocr-highlight-box" style="left:' + word.left + '%;top:' + word.top + '%;width:' + word.width + '%;height:' + word.height + '%;"></div>';
-                            }
+                        getOcrHighlightBoxes(img.ocrData, q).forEach(b => {
+                            hlBoxes += '<div class="search-hit position-absolute" style="left:' + b.left + '%;top:' + b.top + '%;width:' + b.width + '%;height:' + b.height + '%;"></div>';
                         });
                     }
                     return '<div class="screenshot-container mb-2" onclick="event.stopPropagation()">'
@@ -1560,7 +1668,7 @@
         }
 
         function initSearchNavigation() {
-            searchHits = Array.from(document.querySelectorAll('mark.search-hit, .ocr-highlight-box'));
+            searchHits = Array.from(document.querySelectorAll('.search-hit'));
             currentSearchHitIndex = -1;
 
             if (searchHits.length > 0) {

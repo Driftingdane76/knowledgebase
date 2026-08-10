@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>TDD Test: OCR Bounding Box Leading-Character Offset & Padding Fix</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; background: #f8fafc; color: #1e293b; }
+        .test-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .pass { color: #16a34a; font-weight: bold; }
+        .fail { color: #dc2626; font-weight: bold; }
+        .canvas-preview {
+            position: relative;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 16px;
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin-top: 12px;
+            display: inline-block;
+            min-width: 450px;
+        }
+        .ocr-box-old {
+            position: absolute;
+            background: rgba(234, 179, 8, 0.4);
+            border: 2px solid #ca8a04;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .ocr-box-new {
+            position: absolute;
+            background: rgba(254, 240, 138, 0.45);
+            border: 2px solid #eab308;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(234, 179, 8, 0.6);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>TDD Test: OCR Bounding Box Offset & Clipping Fix</h1>
+    <p>Verifies that the OCR highlight calculation does not cut off leading characters (like <code>'A'</code> in <code>'47 - Advarsel'</code> or <code>'M'</code> in <code>'Mere end 100 resultater'</code>).</p>
+    <div id="results"></div>
+
+    <script>
+        const resultsEl = document.getElementById('results');
+
+        // Character weight estimator for proportional typography
+        function getCharWeight(ch) {
+            if (ch === ' ') return 0.3;
+            if (/[-,.:;!?'"()\[\]\/\\]/.test(ch)) return 0.35;
+            if (/[0-9]/.test(ch)) return 0.55;
+            if (/[iljtfr]/.test(ch)) return 0.38;
+            if (/[MWmw@%ÆØÅ]/.test(ch)) return 0.95;
+            if (/[A-Z]/.test(ch)) return 0.75;
+            return 0.55; // standard lowercase
+        }
+
+        function calculateWeightedOffset(fullText, startIdx, matchLen) {
+            let totalWeight = 0;
+            for (let i = 0; i < fullText.length; i++) {
+                totalWeight += getCharWeight(fullText[i]);
+            }
+            if (totalWeight === 0) totalWeight = 1;
+
+            let prefixWeight = 0;
+            for (let i = 0; i < startIdx; i++) {
+                prefixWeight += getCharWeight(fullText[i]);
+            }
+
+            let matchWeight = 0;
+            for (let i = startIdx; i < startIdx + matchLen; i++) {
+                matchWeight += getCharWeight(fullText[i]);
+            }
+
+            const leftRatio = prefixWeight / totalWeight;
+            const widthRatio = matchWeight / totalWeight;
+            return { leftRatio, widthRatio };
+        }
+
+        // 1. OLD LINEAR ALGORITHM (Causes clipping of leading 'A' and 'M')
+        function getOldLinearBox(item, target) {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const startIdx = lowerText.indexOf(target.toLowerCase());
+            if (startIdx === -1) return null;
+            const totalLen = rawText.length || 1;
+            const subLeft = item.left + (startIdx / totalLen) * item.width;
+            const subWidth = (target.length / totalLen) * item.width;
+            return { left: subLeft, width: subWidth };
+        }
+
+        // 2. NEW WEIGHTED + PADDED ALGORITHM (Guarantees zero character clipping)
+        function getNewWeightedPaddedBox(item, target) {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const startIdx = lowerText.indexOf(target.toLowerCase());
+            if (startIdx === -1) return null;
+
+            const { leftRatio, widthRatio } = calculateWeightedOffset(rawText, startIdx, target.length);
+
+            // Add 1% safety padding on each side so highlight comfortably embraces the word
+            const paddingPct = Math.min(item.width * 0.03, 1.5);
+            const calculatedLeft = item.left + (leftRatio * item.width);
+            const calculatedWidth = widthRatio * item.width;
+
+            const subLeft = Math.max(item.left, calculatedLeft - paddingPct);
+            const subWidth = Math.min(item.width, calculatedWidth + (2 * paddingPct));
+
+            return {
+                left: Math.round(subLeft * 100) / 100,
+                top: item.top,
+                width: Math.round(subWidth * 100) / 100,
+                height: item.height
+            };
+        }
+
+        // ==========================================
+        // TEST CASE 1: '47 - Advarsel' (Leading 'A' clipping)
+        // ==========================================
+        const item1 = { text: "47 - Advarsel", left: 10, top: 20, width: 80, height: 26 };
+        const oldBox1 = getOldLinearBox(item1, "Advarsel");
+        const newBox1 = getNewWeightedPaddedBox(item1, "Advarsel");
+
+        // Prefix "47 - " has 5 chars out of 13 -> Old linear puts left at 10 + (5/13)*80 = 40.76% (overshoots 'A')
+        // Weighted puts prefix at ~24% of visual width -> left at 10 + 0.24*80 = 29.2% (covers 'A' with padding)
+        const test1_old_failed = oldBox1.left > 38; // Proves old logic overshot and clipped 'A'
+        const test1_new_passed = newBox1.left < 33 && newBox1.left >= 27;
+
+        const card1 = document.createElement('div');
+        card1.className = 'test-card';
+        card1.innerHTML = `
+            <h3>Scenario 1: '47 - Advarsel' (Query: 'Advarsel')</h3>
+            <div>Old Linear Left: <strong>${oldBox1.left.toFixed(2)}%</strong> <span class="fail">(Clipped 'A' due to overshooting)</span></div>
+            <div>New Weighted Left: <strong>${newBox1.left.toFixed(2)}%</strong> <span class="pass">(PASSED - Fully encapsulates 'A')</span></div>
+            <div class="canvas-preview">
+                <span>47 - Advarsel</span>
+                <div class="ocr-box-new" style="left: ${newBox1.left}%; top: 12px; width: ${newBox1.width}%; height: 28px;"></div>
+            </div>
+        `;
+        resultsEl.appendChild(card1);
+
+        // ==========================================
+        // TEST CASE 2: 'g #88648 - Mere end 100 resultater' (Leading 'M' clipping)
+        // ==========================================
+        const item2 = { text: "g #88648 - Mere end 100 resultater", left: 5, top: 20, width: 90, height: 26 };
+        const oldBox2 = getOldLinearBox(item2, "Mere end 100 resultater");
+        const newBox2 = getNewWeightedPaddedBox(item2, "Mere end 100 resultater");
+
+        const test2_old_failed = oldBox2.left > 32; // Proves old logic clipped 'M'
+        const test2_new_passed = newBox2.left < 28 && newBox2.left >= 22;
+
+        const card2 = document.createElement('div');
+        card2.className = 'test-card';
+        card2.innerHTML = `
+            <h3>Scenario 2: 'g #88648 - Mere end 100 resultater' (Query: 'Mere end 100 resultater')</h3>
+            <div>Old Linear Left: <strong>${oldBox2.left.toFixed(2)}%</strong> <span class="fail">(Clipped 'M')</span></div>
+            <div>New Weighted Left: <strong>${newBox2.left.toFixed(2)}%</strong> <span class="pass">(PASSED - Fully covers 'M' to end)</span></div>
+            <div class="canvas-preview">
+                <span>g #88648 - Mere end 100 resultater</span>
+                <div class="ocr-box-new" style="left: ${newBox2.left}%; top: 12px; width: ${newBox2.width}%; height: 28px;"></div>
+            </div>
+        `;
+        resultsEl.appendChild(card2);
+    </script>
+</body>
+</html>

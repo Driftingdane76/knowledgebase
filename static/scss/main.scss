@@ -72,13 +72,20 @@ $transition-base:           all 0.15s ease-in-out;
 }
 
 // Search highlight
-mark.search-hit {
-    background: rgba($warning, 0.25);
-    color: inherit;
-    padding: 0 2px;
+.search-hit {
+    background-color: #fef08a !important;
+    color: #713f12 !important;
+    padding: 1px 4px;
     border-radius: 3px;
-    font-weight: 600;
-    border: 1px solid rgba($warning, 0.35);
+    font-weight: 700;
+    border: 1px solid #facc15;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    display: inline-block;
+}
+[data-bs-theme="dark"] .search-hit {
+    background-color: #78350f !important;
+    color: #fef08a !important;
+    border-color: #ca8a04 !important;
 }
 
 // Smooth dark mode transition

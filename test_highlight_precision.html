@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>TDD Test: Highlighting Precision & Sub-box Calculations</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; background: #f8fafc; color: #1e293b; }
+        .test-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+        .pass { color: #16a34a; font-weight: bold; }
+        .fail { color: #dc2626; font-weight: bold; }
+        .demo-box { background: #0f172a; color: white; padding: 16px; border-radius: 6px; position: relative; margin-top: 10px; }
+        mark.search-hit {
+            background-color: #fef08a;
+            color: #713f12;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+            border: 1px solid #facc15;
+        }
+        .ocr-highlight-box {
+            position: absolute;
+            background: rgba(234, 179, 8, 0.35);
+            border: 2px solid #ca8a04;
+            border-radius: 3px;
+            box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <h1>TDD Verification: Search Highlighting Precision</h1>
+    <div id="results"></div>
+
+    <script>
+        const resultsEl = document.getElementById('results');
+        function logResult(name, passed, detail, renderHtml) {
+            const div = document.createElement('div');
+            div.className = 'test-card';
+            div.innerHTML = `
+                <div><strong>${name}</strong>: <span class="${passed ? 'pass' : 'fail'}">${passed ? 'PASSED' : 'FAILED'}</span></div>
+                <div style="font-size: 13px; color: #64748b; margin-top: 4px;">${detail}</div>
+                ${renderHtml ? `<div style="margin-top: 8px; padding: 8px; background: #f1f5f9; border-radius: 4px;"><strong>Rendered Preview:</strong> ${renderHtml}</div>` : ''}
+            `;
+            resultsEl.appendChild(div);
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ============================================================
+        // PROPOSED NEW HIGHLIGHT FUNCTION
+        // ============================================================
+        function preciseHighlightMatch(text, query) {
+            let safeText = escapeHTML(text);
+            if (!query || !query.trim()) return safeText;
+
+            const trimmedQuery = query.trim();
+
+            // 1. Exact phrase match first (case-insensitive)
+            const escapedPhrase = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const phraseRegex = new RegExp('(' + escapedPhrase + ')(?![^<]*>)', 'gi');
+            if (phraseRegex.test(safeText)) {
+                return safeText.replace(phraseRegex, '<mark class="search-hit">$1</mark>');
+            }
+
+            // 2. Individual terms with word boundary protection (minimum length >= 2)
+            const terms = trimmedQuery.split(/\s+/).filter(t => t.length >= 2).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            if (terms.length > 0) {
+                // Word boundary check: matches term as whole word or start of word, not inside letters
+                const regex = new RegExp('(?<=^|[\\s.,;:!?"\'()\\[\\]\\/\\\\])(' + terms.join('|') + ')(?=[\\s.,;:!?"\'()\\[\\]\\/\\\\]|$)(?![^<]*>)', 'gi');
+                safeText = safeText.replace(regex, '<mark class="search-hit">$1</mark>');
+            }
+
+            return safeText;
+        }
+
+        // ============================================================
+        // PROPOSED SUB-BOX CALCULATION FOR OCR IMAGE HIGHLIGHTS
+        // ============================================================
+        function getPreciseOcrBoxes(ocrData, query) {
+            if (!query || !query.trim() || !ocrData) return [];
+            const terms = query.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
+            const rawPhrase = query.toLowerCase().trim();
+            const boxes = [];
+
+            ocrData.forEach(item => {
+                const lineText = (item.text || '').toLowerCase();
+                const totalLen = item.text.length;
+                if (!totalLen) return;
+
+                // Check for full phrase first
+                let matchIdx = lineText.indexOf(rawPhrase);
+                let matchLen = rawPhrase.length;
+
+                if (matchIdx === -1) {
+                    // Check for individual term
+                    for (const t of terms) {
+                        const idx = lineText.indexOf(t);
+                        if (idx !== -1) {
+                            matchIdx = idx;
+                            matchLen = t.length;
+                            break;
+                        }
+                    }
+                }
+
+                if (matchIdx !== -1) {
+                    // Calculate sub-box percentage horizontally
+                    const charRatioLeft = matchIdx / totalLen;
+                    const charRatioWidth = Math.min(1, matchLen / totalLen);
+
+                    const subLeft = item.left + (item.width * charRatioLeft);
+                    const subWidth = Math.max(item.width * charRatioWidth, 3); // Minimum 3% width for visibility
+
+                    boxes.push({
+                        left: parseFloat(subLeft.toFixed(2)),
+                        top: item.top,
+                        width: parseFloat(subWidth.toFixed(2)),
+                        height: item.height,
+                        matchedWord: item.text.substring(matchIdx, matchIdx + matchLen)
+                    });
+                }
+            });
+            return boxes;
+        }
+
+        // ============================================================
+        // TEST CASES
+        // ============================================================
+
+        // Test 1: Full Phrase Match ('Mere end 100 resultater')
+        const sampleText1 = "Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Mere end 100 resultater opstod.";
+        const rendered1 = preciseHighlightMatch(sampleText1, "Mere end 100 resultater");
+        const t1_no_manglende_match = !rendered1.includes("mangl<mark");
+        const t1_phrase_matched = rendered1.includes('<mark class="search-hit">Mere end 100 resultater</mark>');
+        logResult("Test 1: Full Phrase Match Without Substring Pollution", 
+                  t1_no_manglende_match && t1_phrase_matched, 
+                  `Ensures 'end' does not match inside 'Godkendelsesflowet' or 'manglende'.`, 
+                  rendered1);
+
+        // Test 2: Word Boundary Protection ('end')
+        const sampleText2 = "Kunden sendte et brev vedrørende enden af sagen.";
+        const rendered2 = preciseHighlightMatch(sampleText2, "end");
+        const t2_no_sendte = !rendered2.includes("s<mark");
+        logResult("Test 2: Word Boundary Protection for Short Words", 
+                  t2_no_sendte, 
+                  `Expected 'sendte' to NOT be highlighted when searching for 'end'.`, 
+                  rendered2);
+
+        // Test 3: OCR Sub-box Calculation (1 word inside a 15-word line)
+        const mockOcrData = [{
+            text: "Mange tak Mette. Jeg har undersøgt sagen vedr. 'Advarsel' og registreret dine oplysninger.",
+            left: 10,
+            top: 40,
+            width: 80,
+            height: 6
+        }];
+        const subBoxes = getPreciseOcrBoxes(mockOcrData, "Advarsel");
+        const t3_pass = subBoxes.length === 1 && subBoxes[0].width < 15 && subBoxes[0].left > 40;
+        logResult("Test 3: OCR Sub-box Horizontal Calculation", 
+                  t3_pass, 
+                  `Original line width: 80%. Calculated sub-box width: ${subBoxes[0]?.width}%, left: ${subBoxes[0]?.left}%, matched: '${subBoxes[0]?.matchedWord}'`);
+    </script>
+</body>
+</html>

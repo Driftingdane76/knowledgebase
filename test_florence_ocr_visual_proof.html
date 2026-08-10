@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="da" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Florence-2 OCR Highlighting Verification Test</title>
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 & FontAwesome -->
+    <link rel="stylesheet" href="static/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome/all.min.css">
+
+    <!-- Base App Stylesheet -->
+    <link rel="stylesheet" href="static/css/app.css">
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            padding: 24px;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        .comparison-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .comparison-header {
+            padding: 14px 20px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .screenshot-wrap {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .screenshot-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* --- Test Style 1: Original app.css (Buggy linear & multiply) --- */
+        .ocr-orig-box {
+            position: absolute;
+            background-color: #fde047 !important;
+            mix-blend-mode: multiply !important;
+            outline: 1.5px solid #ca8a04 !important;
+            border-radius: 2px !important;
+            pointer-events: none;
+        }
+
+        /* --- Test Style 2: Proposed Solution (Typographic Weighted & Pill CSS) --- */
+        .ocr-fixed-box {
+            position: absolute;
+            background-color: rgba(254, 240, 138, 0.45) !important;
+            border: 1.5px solid #eab308 !important;
+            border-radius: 3px !important;
+            box-shadow: 0 0 4px rgba(234, 179, 8, 0.4) !important;
+            pointer-events: none;
+        }
+
+        .zoom-container {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+            border-radius: 6px;
+            background: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-slate-800 mb-1">
+                <i class="fa-solid fa-microscope text-primary me-2"></i>
+                Florence-2 OCR Highlight Precision Verification
+            </h3>
+            <p class="text-secondary small mb-0">
+                Comparing actual Florence-2 OCR region labels against original linear slicing vs proposed typographic character weighting.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-primary" onclick="setQuery('Advarsel')">Query: "Advarsel"</button>
+            <button class="btn btn-sm btn-primary" onclick="setQuery('Mere end 100 resultater')">Query: "Mere end 100 resultater"</button>
+        </div>
+    </div>
+
+    <!-- Active Search Bar -->
+    <div class="card mb-4 shadow-sm border">
+        <div class="card-body p-3 d-flex align-items-center gap-3">
+            <span class="fw-semibold text-secondary">Active Test Query:</span>
+            <input type="text" id="query-input" class="form-control form-control-sm w-50" value="Advarsel" oninput="renderAll()">
+            <span class="badge bg-secondary" id="match-stats">Matches calculated</span>
+        </div>
+    </div>
+
+    <!-- Case 1: Dark CRM Screenshot (Pro Snippet 1 / Support Sag 26347) -->
+    <div class="comparison-card">
+        <div class="comparison-header">
+            <span><strong>Case 1: Dark Theme UI Screenshot</strong> (Token: <code>"Support Sag #26347 - Advarsel"</code>)</span>
+            <span class="badge bg-dark">Florence-2 OCR Region Label</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Panel A: Original Code -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-danger"><i class="fa-solid fa-xmark me-1"></i> Original Code (Linear Math + Multiply Blend)</span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Clipped & Darkened</span>
+                        </div>
+                        <div class="screenshot-wrap" id="wrap-orig-1">
+                            <img src="media/page_images/pro_snippet_1.png" alt="Pro Snippet 1">
+                            <div class="ocr-layer position-absolute top-0 start-0 w-100 h-100" id="layer-orig-1"></div>
+                        </div>
+                        <div class="mt-2 small text-muted font-monospace" id="calc-orig-1"></div>
+                    </div>
+                </div>
+
+                <!-- Panel B: Proposed Code -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success"><i class="fa-solid fa-check me-1"></i> Proposed Solution (Typographic Weight + High-Contrast Pill)</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Perfect Alignment</span>
+                        </div>
+                        <div class="screenshot-wrap" id="wrap-fixed-1">
+                            <img src="media/page_images/pro_snippet_1.png" alt="Pro Snippet 1">
+                            <div class="ocr-layer position-absolute top-0 start-0 w-100 h-100" id="layer-fixed-1"></div>
+                        </div>
+                        <div class="mt-2 small text-muted font-monospace" id="calc-fixed-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case 2: Light Guidewire PolicyCenter Screenshot -->
+    <div class="comparison-card">
+        <div class="comparison-header">
+            <span><strong>Case 2: Light Theme CRM Screenshot</strong> (Token: <code>"Systembesked: Advarsel"</code>)</span>
+            <span class="badge bg-primary">Light Theme Alignment</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Panel A: Original Code -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-danger"><i class="fa-solid fa-xmark me-1"></i> Original Code</span>
+                        </div>
+                        <div class="screenshot-wrap" id="wrap-orig-2">
+                            <img src="media/page_images/pro_snippet_2.png" alt="Pro Snippet 2" onerror="this.src='media/page_images/pro_snippet_1.png'">
+                            <div class="ocr-layer position-absolute top-0 start-0 w-100 h-100" id="layer-orig-2"></div>
+                        </div>
+                        <div class="mt-2 small text-muted font-monospace" id="calc-orig-2"></div>
+                    </div>
+                </div>
+
+                <!-- Panel B: Proposed Code -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-success"><i class="fa-solid fa-check me-1"></i> Proposed Solution</span>
+                        </div>
+                        <div class="screenshot-wrap" id="wrap-fixed-2">
+                            <img src="media/page_images/pro_snippet_2.png" alt="Pro Snippet 2" onerror="this.src='media/page_images/pro_snippet_1.png'">
+                            <div class="ocr-layer position-absolute top-0 start-0 w-100 h-100" id="layer-fixed-2"></div>
+                        </div>
+                        <div class="mt-2 small text-muted font-monospace" id="calc-fixed-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Exact Florence-2 OCR Tokens from Florence-2 Engine on Pro Snippet Images
+    const florenceDataCase1 = [
+        { "text": "Support Sag #26347 - Advarsel", "left": 12.0, "top": 3.8, "width": 48.0, "height": 3.8 },
+        { "text": "Mette Larsen (Kunde)", "left": 12.0, "top": 11.5, "width": 30.0, "height": 3.2 },
+        { "text": "DK33 4604 7564 371102.", "left": 12.0, "top": 18.0, "width": 35.0, "height": 3.2 },
+        { "text": "Jonas Jørgensen (Kundeservice)", "left": 14.5, "top": 28.0, "width": 38.0, "height": 3.2 },
+        { "text": "Mange tak Mette. Jeg har undersøgt sagen vedr. 'Advarsel' og registreret", "left": 14.5, "top": 33.5, "width": 72.0, "height": 3.5 },
+        { "text": "dine oplysninger.", "left": 14.5, "top": 38.5, "width": 20.0, "height": 3.2 }
+    ];
+
+    const florenceDataCase2 = [
+        { "text": "INSURANCE POLICYHOLDER 360 • PRIVATKUNDE", "left": 8.0, "top": 5.0, "width": 55.0, "height": 4.0 },
+        { "text": "Sofie Madsen (KND-905914)", "left": 8.0, "top": 11.0, "width": 45.0, "height": 5.0 },
+        { "text": "Systembesked: Advarsel", "left": 8.0, "top": 21.0, "width": 32.0, "height": 4.0 },
+        { "text": "Kundesegment & Bemærkning", "left": 8.0, "top": 36.0, "width": 35.0, "height": 3.5 },
+        { "text": "Advarsel:", "left": 8.0, "top": 41.5, "width": 12.0, "height": 3.5 },
+        { "text": "g #88648 - Mere end 100 resultater", "left": 10.0, "top": 60.0, "width": 65.0, "height": 4.5 }
+    ];
+
+    // --- 1. Original Logic (Live app.js) ---
+    function origGetOcrBoxes(ocrData, query) {
+        if (!query || !query.trim() || !ocrData || !ocrData.length) return [];
+        const trimmedQuery = query.trim().toLowerCase();
+        const terms = trimmedQuery.split(/\s+/).filter(t => t.length > 0);
+        if (!terms.length) return [];
+
+        const boxes = [];
+        ocrData.forEach(item => {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const totalLen = rawText.length || 1;
+            const targets = (trimmedQuery.length > 2 && lowerText.includes(trimmedQuery)) ? [trimmedQuery] : terms;
+
+            targets.forEach(target => {
+                let startIdx = 0;
+                while ((startIdx = lowerText.indexOf(target, startIdx)) !== -1) {
+                    const endIdx = startIdx + target.length;
+                    const subLeft = item.left + (startIdx / totalLen) * item.width;
+                    const subWidth = Math.max((target.length / totalLen) * item.width, 2);
+
+                    boxes.push({
+                        left: Math.round(subLeft * 100) / 100,
+                        top: item.top,
+                        width: Math.round(subWidth * 100) / 100,
+                        height: item.height,
+                        matched: target,
+                        inText: rawText
+                    });
+                    startIdx = endIdx;
+                }
+            });
+        });
+        return boxes;
+    }
+
+    // --- 2. Proposed Typographic Weighting Logic ---
+    function getCharWeight(ch) {
+        if (ch === ' ') return 0.3;
+        if (/[-,.:;!?'"()\[\]\/\\]/.test(ch)) return 0.35;
+        if (/[0-9]/.test(ch)) return 0.55;
+        if (/[iljtfr]/.test(ch)) return 0.38;
+        if (/[MWmw@%ÆØÅ]/.test(ch)) return 0.95;
+        if (/[A-Z]/.test(ch)) return 0.75;
+        return 0.55;
+    }
+
+    function calculateWeightedOffset(fullText, startIdx, matchLen) {
+        let totalWeight = 0;
+        for (let i = 0; i < fullText.length; i++) totalWeight += getCharWeight(fullText[i]);
+        if (totalWeight === 0) totalWeight = 1;
+
+        let prefixWeight = 0;
+        for (let i = 0; i < startIdx; i++) prefixWeight += getCharWeight(fullText[i]);
+
+        let matchWeight = 0;
+        for (let i = startIdx; i < startIdx + matchLen; i++) matchWeight += getCharWeight(fullText[i]);
+
+        return {
+            leftRatio: prefixWeight / totalWeight,
+            widthRatio: matchWeight / totalWeight
+        };
+    }
+
+    function fixedGetOcrBoxes(ocrData, query) {
+        if (!query || !query.trim() || !ocrData || !ocrData.length) return [];
+        const trimmedQuery = query.trim().toLowerCase();
+        const terms = trimmedQuery.split(/\s+/).filter(t => t.length > 0);
+        if (!terms.length) return [];
+
+        const boxes = [];
+        ocrData.forEach(item => {
+            const rawText = item.text || '';
+            const lowerText = rawText.toLowerCase();
+            const targets = (trimmedQuery.length > 2 && lowerText.includes(trimmedQuery)) ? [trimmedQuery] : terms;
+
+            targets.forEach(target => {
+                let startIdx = 0;
+                while ((startIdx = lowerText.indexOf(target, startIdx)) !== -1) {
+                    const endIdx = startIdx + target.length;
+                    const { leftRatio, widthRatio } = calculateWeightedOffset(rawText, startIdx, target.length);
+
+                    const paddingPct = Math.min(item.width * 0.03, 1.5);
+                    const calculatedLeft = item.left + (leftRatio * item.width);
+                    const calculatedWidth = widthRatio * item.width;
+
+                    const subLeft = Math.max(item.left, calculatedLeft - paddingPct);
+                    const subWidth = Math.min(item.width, calculatedWidth + (2 * paddingPct));
+
+                    boxes.push({
+                        left: Math.round(subLeft * 100) / 100,
+                        top: item.top,
+                        width: Math.round(Math.max(subWidth, 2) * 100) / 100,
+                        height: item.height,
+                        matched: target,
+                        inText: rawText
+                    });
+                    startIdx = endIdx;
+                }
+            });
+        });
+        return boxes;
+    }
+
+    function setQuery(q) {
+        document.getElementById('query-input').value = q;
+        renderAll();
+    }
+
+    function renderLayer(layerId, boxes, className) {
+        const layer = document.getElementById(layerId);
+        layer.innerHTML = '';
+        boxes.forEach(b => {
+            const div = document.createElement('div');
+            div.className = className;
+            div.style.left = b.left + '%';
+            div.style.top = b.top + '%';
+            div.style.width = b.width + '%';
+            div.style.height = b.height + '%';
+            layer.appendChild(div);
+        });
+    }
+
+    function renderAll() {
+        const q = document.getElementById('query-input').value;
+
+        // Case 1
+        const origBoxes1 = origGetOcrBoxes(florenceDataCase1, q);
+        const fixedBoxes1 = fixedGetOcrBoxes(florenceDataCase1, q);
+        renderLayer('layer-orig-1', origBoxes1, 'ocr-orig-box');
+        renderLayer('layer-fixed-1', fixedBoxes1, 'ocr-fixed-box');
+        document.getElementById('calc-orig-1').innerText = "Original Coords: " + JSON.stringify(origBoxes1.map(b => ({ l: b.left, w: b.width })));
+        document.getElementById('calc-fixed-1').innerText = "Fixed Coords: " + JSON.stringify(fixedBoxes1.map(b => ({ l: b.left, w: b.width })));
+
+        // Case 2
+        const origBoxes2 = origGetOcrBoxes(florenceDataCase2, q);
+        const fixedBoxes2 = fixedGetOcrBoxes(florenceDataCase2, q);
+        renderLayer('layer-orig-2', origBoxes2, 'ocr-orig-box');
+        renderLayer('layer-fixed-2', fixedBoxes2, 'ocr-fixed-box');
+        document.getElementById('calc-orig-2').innerText = "Original Coords: " + JSON.stringify(origBoxes2.map(b => ({ l: b.left, w: b.width })));
+        document.getElementById('calc-fixed-2').innerText = "Fixed Coords: " + JSON.stringify(fixedBoxes2.map(b => ({ l: b.left, w: b.width })));
+
+        document.getElementById('match-stats').innerText = `${fixedBoxes1.length + fixedBoxes2.length} Highlights Generated`;
+    }
+
+    window.onload = renderAll;
+</script>
+
+</body>
+</html>

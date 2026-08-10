@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="da" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dedicated Knowledgebase Test Harness (Mirror)</title>
+    <!-- EXACT SAME EXTERNAL STYLESHEETS AS LIVE PRODUCTION APP -->
+    <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/fontawesome/all.min.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="bg-body text-body p-4">
+    <div class="container-fluid">
+        <!-- TEST CONTROLS HEADER -->
+        <div class="card bg-body-tertiary border mb-4 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="fa-solid fa-flask-vial text-primary me-2"></i>Live Mirror Test Harness</h4>
+                        <p class="text-secondary small mb-0">Direct 1:1 reflection of live app DOM, <code>app.css</code>, and search logic without inline styles.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()" id="themeBtn">
+                            <i class="fa-solid fa-sun me-1"></i> Toggle Light/Dark Mode
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- REAL SEARCH BAR MIRROR -->
+                <div class="row align-items-center g-2">
+                    <div class="col-md-6 position-relative">
+                        <div class="input-group">
+                            <span class="input-group-text bg-body border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+                            <input type="text" id="test-search-input" class="form-control bg-body border-start-0" placeholder="Type search term (e.g. Advarsel, Mere end 100 resultater, Fejl)...">
+                            <button class="btn btn-outline-secondary" type="button" onclick="setQuery('')"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex flex-wrap gap-2">
+                        <span class="small text-secondary align-self-center">Quick Presets:</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Advarsel')">Advarsel</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Mere end 100 resultater')">Mere end 100 resultater</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Fejl')">Fejl</button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="setQuery('Godkendelsesflowet')">Godkendelsesflowet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEARCH STATUS INFO -->
+        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+            <div id="search-status" class="small text-secondary fw-semibold">Showing all test cases</div>
+            <div class="small text-secondary"><span id="match-count">0</span> match(es) highlighted</div>
+        </div>
+
+        <!-- REAL KB ROWS CONTAINER -->
+        <div class="card shadow-sm border">
+            <div class="card-header bg-body-tertiary fw-bold py-2">
+                <div class="row g-0 m-0 text-secondary small text-uppercase">
+                    <div class="col-12 col-md-1">Dato / Bruger</div>
+                    <div class="col-12 col-md-5">Spørgsmål & Skærmbilleder</div>
+                    <div class="col-12 col-md-5">Løsning</div>
+                    <div class="col-12 col-md-1">Kvalitet</div>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush" id="kb-rows-container">
+                <!-- Dynamically rendered via real render logic -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX OVERLAY MIRROR (IDENTICAL TO APP.JS) -->
+    <div id="image-overlay">
+        <div class="lightbox-dialog position-relative bg-dark rounded p-2 text-center">
+            <button class="btn btn-sm btn-close btn-close-white position-absolute top-0 end-0 m-2" onclick="closeOverlay()"></button>
+            <div class="small text-light mb-2 fw-semibold" id="overlay-label">Image Preview</div>
+            <div class="position-relative d-inline-block">
+                <img id="overlay-img" src="" class="img-fluid rounded" style="max-height: 80vh;">
+                <div id="lightbox-highlight-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="/static/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // ==========================================
+        // REAL MOCK DATASET
+        // ==========================================
+        const TEST_DATA = [
+            {
+                id: 'row-1',
+                date: '2026-08-08',
+                username: 'MetteLarsen',
+                questionText: 'Mange tak Mette. Jeg har undersøgt sagen vedr. Advarsel og registreret dine oplysninger.',
+                images: [
+                    {
+                        id: 'img-1',
+                        name: 'support_chat_dark.webp',
+                        dataUrl: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="220" viewBox="0 0 600 220"><rect width="600" height="220" fill="#0f172a"/><text x="20" y="35" fill="#facc15" font-family="sans-serif" font-size="14" font-weight="bold">Support Sag #26347 - Advarsel</text><rect x="20" y="55" width="560" height="60" rx="6" fill="#1e293b"/><text x="35" y="80" fill="#38bdf8" font-family="sans-serif" font-size="12" font-weight="bold">Mette Larsen (Kunde)</text><text x="35" y="100" fill="#cbd5e1" font-family="monospace" font-size="12">DK33 4604 7564 371102</text><rect x="20" y="125" width="560" height="75" rx="6" fill="#1e293b"/><text x="35" y="150" fill="#818cf8" font-family="sans-serif" font-size="12" font-weight="bold">Jonas Jørgensen (Kundeservice)</text><text x="35" y="175" fill="#f8fafc" font-family="sans-serif" font-size="13">Mange tak Mette. Jeg har undersøgt sagen vedr. Advarsel og registreret dine oplysninger.</text></svg>'))),
+                        ocrData: [
+                            { text: "Support", left: 3.3, top: 9.0, width: 9.0, height: 10.0 },
+                            { text: "Sag", left: 13.0, top: 9.0, width: 5.0, height: 10.0 },
+                            { text: "#26347", left: 18.5, top: 9.0, width: 8.5, height: 10.0 },
+                            { text: "-", left: 27.5, top: 9.0, width: 2.0, height: 10.0 },
+                            { text: "Advarsel", left: 30.0, top: 9.0, width: 11.5, height: 10.0 },
+                            { text: "Mette", left: 5.8, top: 68.0, width: 7.0, height: 10.0 },
+                            { text: "Larsen", left: 13.5, top: 68.0, width: 8.0, height: 10.0 },
+                            { text: "undersøgt", left: 42.0, top: 68.0, width: 12.0, height: 10.0 },
+                            { text: "Advarsel", left: 63.5, top: 68.0, width: 11.0, height: 10.0 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'row-2',
+                date: '2026-08-07',
+                username: 'JensHansen',
+                questionText: 'Godkendelsesflowet var låst på grund af en manglende ledergodkendelse. Erstatningen er sendt til kundens NemKonto. Mere end 100 resultater fundet.',
+                resolutionText: 'Ledergodkendelse overskrevet via admin dashboard. Udbetaling sendt.',
+                images: [
+                    {
+                        id: 'img-2',
+                        name: 'results_table_crm.webp',
+                        dataUrl: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="150" viewBox="0 0 600 150"><rect width="600" height="150" fill="#ffffff"/><text x="20" y="40" fill="#0f172a" font-family="sans-serif" font-size="14" font-weight="bold">System Status: CRM Udbetalinger</text><rect x="20" y="60" width="560" height="65" rx="4" fill="#f8fafc" stroke="#e2e8f0"/><text x="35" y="100" fill="#334155" font-family="monospace" font-size="13">Status: 48 - Mere end 100 resultater fundet</text></svg>'))),
+                        ocrData: [
+                            { text: "System", left: 3.3, top: 16.0, width: 9.5, height: 14.0 },
+                            { text: "Status:", left: 13.5, top: 16.0, width: 9.0, height: 14.0 },
+                            { text: "48", left: 16.0, top: 56.0, width: 4.5, height: 14.0 },
+                            { text: "-", left: 21.0, top: 56.0, width: 2.0, height: 14.0 },
+                            { text: "Mere", left: 23.5, top: 56.0, width: 7.5, height: 14.0 },
+                            { text: "end", left: 31.5, top: 56.0, width: 5.5, height: 14.0 },
+                            { text: "100", left: 37.5, top: 56.0, width: 5.5, height: 14.0 },
+                            { text: "resultater", left: 43.5, top: 56.0, width: 14.0, height: 14.0 }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'row-3',
+                date: '2026-08-06',
+                username: 'SofieMadsen',
+                questionText: 'Systembesked: Fejl i policeregistrering. Kundens NemKonto kunne ikke verificeres.',
+                resolutionText: 'Kunden kontaktet telefonisk. Korrekt CPR modtaget og opdateret.',
+                images: [
+                    {
+                        id: 'img-3',
+                        name: 'alert_banner.webp',
+                        dataUrl: 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="120" viewBox="0 0 600 120"><rect width="600" height="120" fill="#fef2f2"/><rect x="15" y="15" width="570" height="90" rx="6" fill="#fee2e2" stroke="#fca5a5"/><text x="35" y="65" fill="#991b1b" font-family="sans-serif" font-size="14" font-weight="bold">Systembesked: Fejl: Udbetaling afvist pga. manglende dokumentation.</text></svg>'))),
+                        ocrData: [
+                            { text: "Systembesked:", left: 5.8, top: 38.0, width: 20.0, height: 22.0 },
+                            { text: "Fejl:", left: 26.5, top: 38.0, width: 7.5, height: 22.0 },
+                            { text: "Udbetaling", left: 34.5, top: 38.0, width: 16.0, height: 22.0 },
+                            { text: "afvist", left: 51.0, top: 38.0, width: 8.5, height: 22.0 }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // HIGHLIGHT & OCR LOGIC
+        // ==========================================
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function highlightMatch(text, query) {
+            if (!text) return '';
+            const escapedText = escapeHTML(text);
+            if (!query || !query.trim()) return escapedText;
+
+            const trimmed = query.trim();
+            const escapedPhrase = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const words = trimmed.split(/\s+/).filter(t => t.length > 0).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+            const pattern = escapedPhrase.includes(' ')
+                ? `(?:\\b${escapedPhrase}\\b|${escapedPhrase}|(?:\\b(?:${words.join('|')})\\b))`
+                : `(?:\\b${escapedPhrase}\\b|${escapedPhrase})`;
+
+            return escapedText.replace(new RegExp(`(${pattern})(?![^<]*>)`, 'gi'), '<mark class="search-hit">$1</mark>');
+        }
+
+        function getOcrHighlightBoxes(ocrData, query) {
+            if (!query || !query.trim() || !ocrData || !ocrData.length) return [];
+            const trimmedQuery = query.trim().toLowerCase();
+            const terms = trimmedQuery.split(/\s+/).filter(t => t.length > 0);
+            if (!terms.length) return [];
+
+            const boxes = [];
+            const isPhrase = terms.length > 1;
+
+            if (isPhrase) {
+                for (let i = 0; i <= ocrData.length - terms.length; i++) {
+                    let match = true;
+                    for (let j = 0; j < terms.length; j++) {
+                        const wordText = (ocrData[i + j].text || '').toLowerCase().replace(/^[^\wæøå]+|[^\wæøå]+$/gi, '');
+                        if (wordText !== terms[j] && !wordText.includes(terms[j])) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        const firstWord = ocrData[i];
+                        const lastWord = ocrData[i + terms.length - 1];
+                        const top = Math.min(...ocrData.slice(i, i + terms.length).map(w => w.top));
+                        const bottom = Math.max(...ocrData.slice(i, i + terms.length).map(w => w.top + w.height));
+                        const left = firstWord.left;
+                        const right = lastWord.left + lastWord.width;
+                        boxes.push({
+                            left: left,
+                            top: top,
+                            width: Math.max(right - left, 2),
+                            height: Math.max(bottom - top, 2)
+                        });
+                        i += terms.length - 1;
+                    }
+                }
+                if (boxes.length > 0) return boxes;
+            }
+
+            ocrData.forEach(word => {
+                const text = (word.text || '').toLowerCase().replace(/^[^\wæøå]+|[^\wæøå]+$/gi, '');
+                if (terms.some(term => text === term || text.includes(term))) {
+                    boxes.push({
+                        left: word.left,
+                        top: word.top,
+                        width: word.width,
+                        height: word.height
+                    });
+                }
+            });
+
+            return boxes;
+        }
+
+        // ==========================================
+        // RENDER ROWS (1:1 LIVE MIRROR)
+        // ==========================================
+        function renderRows() {
+            const container = document.getElementById('kb-rows-container');
+            const q = document.getElementById('test-search-input').value.trim();
+            container.innerHTML = '';
+
+            let totalMatches = 0;
+
+            TEST_DATA.forEach(row => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item p-0 bg-transparent';
+
+                const thumbsHtml = (row.images || []).map(img => {
+                    let hlBoxes = '';
+                    if (q && img.ocrData && img.ocrData.length) {
+                        getOcrHighlightBoxes(img.ocrData, q).forEach(b => {
+                            totalMatches++;
+                            hlBoxes += `<div class="ocr-highlight-box" style="left:${b.left}%;top:${b.top}%;width:${b.width}%;height:${b.height}%;"></div>`;
+                        });
+                    }
+                    return `<div class="screenshot-container mb-2" onclick="zoomImage('${img.id}')">`
+                        + `<img src="${img.dataUrl}" class="img-screenshot img-fluid" alt="${escapeHTML(img.name)}">`
+                        + (hlBoxes ? `<div class="ocr-highlight-layer">${hlBoxes}</div>` : '')
+                        + `</div>`;
+                }).join('');
+
+                const qHighlighted = highlightMatch(row.questionText, q);
+                const rHighlighted = highlightMatch(row.resolutionText, q);
+                const userHighlighted = highlightMatch(row.username, q);
+
+                totalMatches += (qHighlighted.match(/<mark class="search-hit">/g) || []).length;
+                totalMatches += (rHighlighted.match(/<mark class="search-hit">/g) || []).length;
+
+                li.innerHTML = `
+                    <div class="kb-row row g-0 m-0" id="${row.id}">
+                        <div class="kb-cell col-12 col-md-1">
+                            <div class="d-flex flex-column gap-2 w-100 align-items-start">
+                                <span class="badge-date fw-semibold">${row.date}</span>
+                                <span class="badge-user">@${userHighlighted}</span>
+                            </div>
+                        </div>
+                        <div class="kb-cell col-12 col-md-5">
+                            <div class="w-100">
+                                <p class="mb-1 lh-base quest-text-render">${qHighlighted}</p>
+                                ${thumbsHtml ? `<div class="d-flex flex-column gap-1 mt-2">${thumbsHtml}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="kb-cell col-12 col-md-5">
+                            <div class="resolution-container w-100">
+                                <div class="w-100 font-mono lh-base resolution-text-render">${rHighlighted}</div>
+                            </div>
+                        </div>
+                        <div class="kb-cell col-12 col-md-1">
+                            <div class="d-flex flex-column gap-2 w-100 align-items-start">
+                                <span class="badge-date fw-semibold">${row.date}</span>
+                                <span class="badge-user">@DKquality</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(li);
+            });
+
+            document.getElementById('match-count').textContent = totalMatches;
+            document.getElementById('search-status').textContent = q ? `Filtered by query "${q}"` : 'Showing all test cases';
+        }
+
+        // ==========================================
+        // LIGHTBOX & HELPERS
+        // ==========================================
+        function zoomImage(imgId) {
+            let img = null;
+            for (let r of TEST_DATA) {
+                img = (r.images || []).find(i => i.id === imgId);
+                if (img) break;
+            }
+            if (!img) return;
+
+            document.getElementById('overlay-img').src = img.dataUrl;
+            document.getElementById('overlay-label').textContent = img.name;
+            const container = document.getElementById('lightbox-highlight-container');
+            container.innerHTML = '';
+
+            const q = document.getElementById('test-search-input').value.trim();
+            if (q && img.ocrData && img.ocrData.length) {
+                getOcrHighlightBoxes(img.ocrData, q).forEach(b => {
+                    const box = document.createElement('div');
+                    box.className = 'ocr-highlight-box';
+                    box.style.left = `${b.left}%`;
+                    box.style.top = `${b.top}%`;
+                    box.style.width = `${b.width}%`;
+                    box.style.height = `${b.height}%`;
+                    container.appendChild(box);
+                });
+            }
+
+            document.getElementById('image-overlay').classList.add('show');
+        }
+
+        function closeOverlay() {
+            document.getElementById('image-overlay').classList.remove('show');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-bs-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-bs-theme', next);
+            document.getElementById('themeBtn').innerHTML = next === 'dark' 
+                ? '<i class="fa-solid fa-sun me-1"></i> Toggle Light/Dark Mode'
+                : '<i class="fa-solid fa-moon me-1"></i> Toggle Light/Dark Mode';
+        }
+
+        function setQuery(q) {
+            const input = document.getElementById('test-search-input');
+            input.value = q;
+            renderRows();
+        }
+
+        document.getElementById('test-search-input').addEventListener('input', renderRows);
+
+        // Initial render
+        renderRows();
+    </script>
+</body>
+</html>

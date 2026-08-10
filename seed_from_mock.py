@@ -22,8 +22,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 os.environ['DJANGO_ALLOW_ASYNC_UNSAFE'] = 'true'
 django.setup()
 
-from qa_app.models import Category, KnowledgePage, PageImage
+from qa_app.models import Category, KnowledgePage, PageImage, Tag
 from qa_app.views import extract_text_from_image
+from qa_app.utils import extract_tags
 from test_htmls.dynamic_mock_generator import generate_dynamic_html_snippet
 
 try:
@@ -116,7 +117,31 @@ def randomize_html(original_html):
     html = html.replace("#10044", f"#{random.randint(10000, 99999)}")
     return html
 
+def load_tags_from_file(filepath="tags.txt"):
+    """
+    Parses a text file with terms/phrases (one per line).
+    Strips whitespace and returns a list of non-empty unique terms.
+    """
+    if not os.path.exists(filepath):
+        return []
+    tags = []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        for line in f:
+            cleaned = line.strip()
+            if cleaned and not cleaned.startswith('#') and cleaned not in tags:
+                tags.append(cleaned)
+    return tags
+
 def generate_and_seed(total_cases=50):
+    tags = load_tags_from_file("tags.txt")
+    print(f"Loaded {len(tags)} custom terms/wording from tags.txt for dynamic UI distribution.")
+    
+    # Pre-populate Tag model so extract_tags() can automatically link them
+    for t in tags:
+        clean_tag_name = t.rstrip(':')
+        if clean_tag_name:
+            Tag.objects.get_or_create(name=clean_tag_name)
+    
     print("Creating Category...")
     cat_ui = Category.objects.create(id="UI-Pro-Snippets", name="Professional UI Snippets")
     
@@ -130,8 +155,8 @@ def generate_and_seed(total_cases=50):
             title = f"Test #{i}: UI Element Snippet"
             print(f"\nProcessing {title}...")
             
-            # 1. Generate dynamic HTML snippet across 8 layout architectures & 6 color themes
-            html = generate_dynamic_html_snippet(i)
+            # 1. Generate dynamic HTML snippet across 8 layout architectures & 6 color themes with custom tags
+            html = generate_dynamic_html_snippet(i, custom_tags=tags)
             page_ctx.set_content(html)
             page_ctx.wait_for_timeout(50)
             
@@ -170,6 +195,15 @@ def generate_and_seed(total_cases=50):
                 ocr_data=ocr_data
             )
             image_instance.file.save(img_filename, ContentFile(redacted_buf.getvalue()), save=True)
+            
+            # 5. Extract and link tags from combined QA text and OCR screenshot text
+            combined_text = f"{qa_question} {qa_answer} {extracted_text or ''}"
+            matching_tags = extract_tags(combined_text)
+            if matching_tags:
+                db_page.tags.set(matching_tags)
+                tag_names = [t.name for t in matching_tags]
+                print(f"  -> Linked {len(matching_tags)} tags to page: {tag_names}")
+            
             print(f"  -> Successfully seeded DB for {img_filename}")
             
         browser.close()

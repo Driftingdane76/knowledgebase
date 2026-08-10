@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OCR Highlighter Technique Comparison</title>
+    <link rel="stylesheet" href="/static/css/bootstrap/bootstrap.min.css">
+    <style>
+        body { padding: 30px; background: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif; }
+        .test-card { background: #1e293b; border-radius: 10px; padding: 20px; margin-bottom: 25px; border: 1px solid #334155; }
+        .preview-box { position: relative; display: inline-block; padding: 12px 18px; border-radius: 6px; font-size: 15px; font-weight: 500; }
+        
+        /* Technique 1: Multiply Blend Mode (Classic PDF Highlighter) */
+        .hl-multiply {
+            position: absolute;
+            background-color: #fde047;
+            mix-blend-mode: multiply;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        /* Technique 2: Clean 40% Transparent Yellow Tint */
+        .hl-tint {
+            position: absolute;
+            background-color: rgba(250, 204, 21, 0.42);
+            border: 1px solid rgba(234, 179, 8, 0.7);
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
+        /* Technique 3: Multiply with Border */
+        .hl-multiply-bordered {
+            position: absolute;
+            background-color: #facc15;
+            mix-blend-mode: multiply;
+            outline: 1.5px solid #ca8a04;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        /* Technique 4: Injected Text Badge (Causes Misalignment / Ghosting) */
+        .hl-solid-badge {
+            position: absolute;
+            background-color: #fef08a;
+            color: #713f12;
+            border: 1px solid #facc15;
+            border-radius: 3px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container max-w-4xl">
+        <h2 class="fw-bold text-warning mb-2">OCR Highlighter Alignment & Technique Comparison</h2>
+        <p class="text-secondary mb-4">Finding the exact, flawless highlighter that preserves crisp text with ZERO ghosting/misalignment.</p>
+
+        <!-- TEST 1: White Card with Black Text (e.g. 'Police #SF-889104') -->
+        <div class="test-card">
+            <h5 class="fw-bold text-info mb-3">Test 1: Dark Text on Light Card ("Police #SF-889104")</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="small text-danger fw-bold mb-1">Injected Text (Ghosting)</div>
+                    <div class="preview-box bg-white text-dark">
+                        Police #SF-889104
+                        <!-- Simulated 2px OCR box shift -->
+                        <div class="hl-solid-badge" style="left: 20px; top: 10px; width: 44px; height: 22px;">Police</div>
+                    </div>
+                    <div class="small text-muted mt-1">Ghosting: 'P Police'</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply Blend Mode</div>
+                    <div class="preview-box bg-white text-dark">
+                        Police #SF-889104
+                        <div class="hl-multiply" style="left: 17px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                    <div class="small text-muted mt-1">100% crisp text, no ghosting</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply + Border</div>
+                    <div class="preview-box bg-white text-dark">
+                        Police #SF-889104
+                        <div class="hl-multiply-bordered" style="left: 17px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                    <div class="small text-muted mt-1">Framed highlight</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-info fw-bold mb-1">40% Yellow Tint</div>
+                    <div class="preview-box bg-white text-dark">
+                        Police #SF-889104
+                        <div class="hl-tint" style="left: 17px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                    <div class="small text-muted mt-1">Soft highlighter tint</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 2: Blue Button with White Text (e.g. 'Ny Police') -->
+        <div class="test-card">
+            <h5 class="fw-bold text-info mb-3">Test 2: White Text on Blue Button ("Ny Police")</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="small text-danger fw-bold mb-1">Injected Text (Ghosting)</div>
+                    <div class="preview-box bg-primary text-white">
+                        Ny Police
+                        <div class="hl-solid-badge" style="left: 45px; top: 10px; width: 44px; height: 22px;">Police</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply Blend Mode</div>
+                    <div class="preview-box bg-primary text-white">
+                        Ny Police
+                        <div class="hl-multiply" style="left: 42px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply + Border</div>
+                    <div class="preview-box bg-primary text-white">
+                        Ny Police
+                        <div class="hl-multiply-bordered" style="left: 42px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-info fw-bold mb-1">40% Yellow Tint</div>
+                    <div class="preview-box bg-primary text-white">
+                        Ny Police
+                        <div class="hl-tint" style="left: 42px; top: 11px; width: 46px; height: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 3: Dark Header with Yellow/White Text ('Support Sag #26347 - Advarsel') -->
+        <div class="test-card">
+            <h5 class="fw-bold text-info mb-3">Test 3: Dark Header ("- Advarsel")</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="small text-danger fw-bold mb-1">Injected Text (Ghosting)</div>
+                    <div class="preview-box bg-dark text-warning border border-secondary">
+                        - Advarsel
+                        <!-- Shifted 3px -->
+                        <div class="hl-solid-badge" style="left: 36px; top: 10px; width: 62px; height: 22px;">Advarsel</div>
+                    </div>
+                    <div class="small text-muted mt-1">Shows '- A Advarsel' (Ghosting)</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply Blend Mode</div>
+                    <div class="preview-box bg-dark text-warning border border-secondary">
+                        - Advarsel
+                        <div class="hl-multiply" style="left: 30px; top: 11px; width: 65px; height: 20px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-success fw-bold mb-1">Multiply + Border</div>
+                    <div class="preview-box bg-dark text-warning border border-secondary">
+                        - Advarsel
+                        <div class="hl-multiply-bordered" style="left: 30px; top: 11px; width: 65px; height: 20px;"></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small text-info fw-bold mb-1">40% Yellow Tint</div>
+                    <div class="preview-box bg-dark text-warning border border-secondary">
+                        - Advarsel
+                        <div class="hl-tint" style="left: 30px; top: 11px; width: 65px; height: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 4: 'Mere end 100 resultater' -->
+        <div class="test-card">
+            <h5 class="fw-bold text-info mb-3">Test 4: Compound Phrase ("- Mere end 100 resultater")</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="small text-danger fw-bold mb-1">Injected Multi-Word Badges (Severe Ghosting)</div>
+                    <div class="preview-box bg-white text-dark">
+                        - Mere end 100 resultater
+                        <div class="hl-solid-badge" style="left: 35px; top: 10px; width: 38px; height: 22px;">Mere</div>
+                        <div class="hl-solid-badge" style="left: 77px; top: 10px; width: 28px; height: 22px;">end</div>
+                        <div class="hl-solid-badge" style="left: 109px; top: 10px; width: 28px; height: 22px;">100</div>
+                        <div class="hl-solid-badge" style="left: 141px; top: 10px; width: 70px; height: 22px;">resultater</div>
+                    </div>
+                    <div class="small text-danger mt-1">Exact bug in user screenshot: '- M Mere end 100 resultater'</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="small text-success fw-bold mb-1">Single Continuous Highlight Box (Multiply / Tint)</div>
+                    <div class="preview-box bg-white text-dark">
+                        - Mere end 100 resultater
+                        <div class="hl-multiply-bordered" style="left: 28px; top: 11px; width: 180px; height: 20px;"></div>
+                    </div>
+                    <div class="small text-success mt-1">Zero ghosting, 100% clean single highlighter stroke</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

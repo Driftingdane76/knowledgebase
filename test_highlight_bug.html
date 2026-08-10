@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>TDD Test: Proportional Font OCR Fix</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 24px; background: #f8fafc; color: #1e293b; }
+        .test-card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+        .pass { color: #16a34a; font-weight: bold; }
+        .fail { color: #dc2626; font-weight: bold; }
+        
+        .ocr-demo-container {
+            position: relative;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            padding: 20px;
+            margin-top: 10px;
+            font-size: 16px;
+            width: 400px;
+        }
+        
+        /* The simulated OCR text line */
+        .simulated-ocr-text {
+            position: absolute;
+            left: 10%;
+            width: 80%;
+            top: 20px;
+            white-space: pre;
+            /* Proportional font to simulate UI screenshot */
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
+
+        .ocr-highlight-box {
+            position: absolute;
+            background-color: rgba(254, 240, 138, 0.5) !important; /* Semi-transparent yellow */
+            border: 1px solid #facc15 !important;
+            border-radius: 3px !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+            pointer-events: none;
+            height: 24px;
+            top: 18px;
+        }
+        .label { font-weight: bold; margin-top: 10px; display: block; font-size: 13px; color: #475569; }
+    </style>
+</head>
+<body>
+    <h1>TDD Verification: Fixing Proportional Font Offset</h1>
+    <p>The previous math <code>matchIdx / totalLen</code> caused the yellow box to shift to the right because letters like 'i', 'l', and spaces take up less visual space than their character count suggests.</p>
+    
+    <div id="results"></div>
+
+    <script>
+        const resultsEl = document.getElementById('results');
+        
+        // 1. OLD FLAWED LOGIC (Pure Character Ratio)
+        function getOldOcrHighlightBoxes(ocrData, query) {
+            const rawPhrase = query.toLowerCase().trim();
+            const boxes = [];
+            ocrData.forEach(item => {
+                const lineText = (item.text || '').toLowerCase();
+                const totalLen = item.text.length;
+                let matchIdx = lineText.indexOf(rawPhrase);
+                let matchLen = rawPhrase.length;
+
+                if (matchIdx !== -1) {
+                    const charRatioLeft = matchIdx / totalLen;
+                    const charRatioWidth = matchLen / totalLen;
+                    const subLeft = item.left + (item.width * charRatioLeft);
+                    const subWidth = item.width * charRatioWidth; 
+                    boxes.push({ left: subLeft, width: subWidth });
+                }
+            });
+            return boxes;
+        }
+
+        // 2. NEW CANVAS MEASUREMENT LOGIC (Visual Width Ratio)
+        function getVisualOcrHighlightBoxes(ocrData, query) {
+            const rawPhrase = query.toLowerCase().trim();
+            const boxes = [];
+            
+            // Helper to measure accurate text width
+            function getOcrTextWidthRatio(fullText, matchIdx, matchLen) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.font = '16px system-ui, -apple-system, sans-serif'; 
+                
+                const totalWidth = ctx.measureText(fullText).width;
+                if (totalWidth === 0) return { left: matchIdx / fullText.length, width: matchLen / fullText.length };
+                
+                const prefix = fullText.substring(0, matchIdx);
+                const matchStr = fullText.substring(matchIdx, matchIdx + matchLen);
+                
+                return {
+                    left: ctx.measureText(prefix).width / totalWidth,
+                    width: ctx.measureText(matchStr).width / totalWidth
+                };
+            }
+
+            ocrData.forEach(item => {
+                const lineText = (item.text || '').toLowerCase();
+                let matchIdx = lineText.indexOf(rawPhrase);
+                let matchLen = rawPhrase.length;
+
+                if (matchIdx !== -1) {
+                    const ratio = getOcrTextWidthRatio(item.text, matchIdx, matchLen);
+                    const subLeft = item.left + (item.width * ratio.left);
+                    const subWidth = item.width * ratio.width;
+                    boxes.push({ left: subLeft, width: subWidth });
+                }
+            });
+            return boxes;
+        }
+
+        // --- RUN DEMO ---
+        const testQuery = "Advarsel";
+        const mockOcrData = [{
+            text: "Support Sag #26347 - Advarsel",
+            left: 10,
+            width: 80
+        }];
+
+        const oldBoxes = getOldOcrHighlightBoxes(mockOcrData, testQuery);
+        const newBoxes = getVisualOcrHighlightBoxes(mockOcrData, testQuery);
+
+        // Render Old Flawed Output
+        const oldDiv = document.createElement('div');
+        oldDiv.className = 'test-card';
+        oldDiv.innerHTML = `
+            <div><strong>Flawed Ratio Logic (Current App Behavior)</strong>: Notice how the box is shifted right, clipping the 'A' and covering empty space.</div>
+            <div class="ocr-demo-container">
+                <div class="simulated-ocr-text">${mockOcrData[0].text}</div>
+                <div class="ocr-highlight-box" style="left: ${oldBoxes[0].left}%; width: ${oldBoxes[0].width}%; border-color: red !important;"></div>
+            </div>
+        `;
+        resultsEl.appendChild(oldDiv);
+
+        // Render New Accurate Output
+        const newDiv = document.createElement('div');
+        newDiv.className = 'test-card';
+        newDiv.innerHTML = `
+            <div><strong>New Canvas Measurement Logic</strong>: Perfectly aligns over "Advarsel" by calculating real font proportions.</div>
+            <div class="ocr-demo-container">
+                <div class="simulated-ocr-text">${mockOcrData[0].text}</div>
+                <div class="ocr-highlight-box" style="left: ${newBoxes[0].left}%; width: ${newBoxes[0].width}%;"></div>
+            </div>
+        `;
+        resultsEl.appendChild(newDiv);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+@echo off
+echo Starting Django Development Server in .venv...
+.venv\Scripts\python.exe manage.py runserver %*

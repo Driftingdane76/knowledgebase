@@ -485,3 +485,12 @@ def delete_page(request, page_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+
+def test_highlight_precision_view(request):
+    """
+    Renders the visual regression test suite for search highlighting precision
+    and OCR sub-box positioning across multiple real-world screenshot backgrounds.
+    """
+    return render(request, 'test_highlight_precision.html')
+
+

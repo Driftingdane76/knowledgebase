@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+{% block content %}
+
+    <!-- MAIN WRAPPER -->
+    <div class="d-flex flex-column flex-md-row">
+        {% include 'includes/sidebar.html' %}
+
+        <!-- Main Content Column -->
+        <main class="px-4 py-4 flex-grow-1 kb-main-content">
+
+            <!-- Sticky Searchbar Section -->
+            <div id="sticky-controls-wrapper" class="sticky-controls-wrapper mb-4">
+                <div id="sticky-controls"
+                    class="sticky-controls bg-body d-flex align-items-center justify-content-center gap-2 w-100 p-2 rounded">
+                    <div id="sticky-controls-inner" class="d-flex flex-wrap align-items-center gap-2 w-75 px-0 px-md-2">
+                        <button id="sidebar-toggle-search" class="action-btn flex-shrink-0"
+                            title="{% translate 'Toggle Sidebar' %}">
+                            <i class="fa-solid fa-bars icon-slate"></i>
+                        </button>
+                        <div class="search-wrap search-box flex-grow-1 search-box-min-width">
+                            <span class="search-icon"><i
+                                    class="fa-solid fa-magnifying-glass fa-sm icon-slate"></i></span>
+                            <input type="text" id="search-input" class="form-control form-control-sm search-input w-100"
+                                placeholder="{% translate 'Search date, user, question…' %}">
+                            <div id="search-nav-controls" class="search-nav d-none align-items-center gap-1">
+                                <span id="search-nav-text" class="icon-blue small font-mono opacity-75">0/0</span>
+                                <button id="search-nav-prev" class="btn btn-sm p-0 icon-blue opacity-75 hover-opacity-100" title="{% translate 'Previous hit' %}"><i class="fa-solid fa-chevron-up"></i></button>
+                                <button id="search-nav-next" class="btn btn-sm p-0 icon-blue opacity-75 hover-opacity-100" title="{% translate 'Next hit' %}"><i class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                            <span class="search-clear" id="search-clear-btn" title="{% translate 'Clear search' %}"><i
+                                    class="fa-solid fa-xmark"></i></span>
+                        </div>
+                        <select id="sort-select" class="form-select form-select-sm sort-select w-auto"
+                            title="{% translate 'Sort Order' %}">
+                            <option value="date-desc">{% translate "Newest First" %}</option>
+                            <option value="date-asc">{% translate "Oldest First" %}</option>
+                            <option value="user-asc">{% translate "User A-Z" %}</option>
+                            <option value="user-desc">{% translate "User Z-A" %}</option>
+                        </select>
+                        {% if can_edit %}
+                        <button id="add-row-btn" class="btn btn-sm btn-add-row flex-shrink-0 px-2"
+                            title="{% translate 'Add Row' %}">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Row -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3 mb-3">
+                <div class="flex-shrink-0">
+                    <h2 class="fw-bold mb-1 d-flex align-items-center gap-2 section-title">
+                        <span id="category-title-display" data-default-title="{% translate 'All Questions' %}">{% translate "All Questions" %}</span>
+                        <span class="count-badge" id="pages-count-badge">0</span>
+                    </h2>
+
+                </div>
+            </div>
+
+            <div class="alert alert-warning py-2 mb-3 fw-bold text-center">Dummy data used (DEEP DEBUG MODE: EXACT COLOR & OCR ALIGNMENT)</div>
+            
+            <div id="debug-log-container" class="alert alert-dark p-3 mb-4 font-monospace small" style="max-height: 200px; overflow-y: auto;">
+                <strong>Debug Log Active</strong><br>
+            </div>
+
+            <!-- Table -->
+            <div class="kb-table-wrap bg-body shadow-sm mb-4">
+                <div id="pagination-bar" class="d-none d-flex align-items-center justify-content-between px-3 py-2 border-bottom pagination-bar-text">
+                    <span id="pagination-info" class="text-secondary"></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="page-prev-btn" class="action-btn" title="{% translate 'Previous page' %}" disabled><i class="fa-solid fa-chevron-left fa-xs"></i></button>
+                        <span id="pagination-pages" class="text-secondary font-mono pagination-page-label"></span>
+                        <button id="page-next-btn" class="action-btn" title="{% translate 'Next page' %}" disabled><i class="fa-solid fa-chevron-right fa-xs"></i></button>
+                    </div>
+                </div>
+
+                <div class="kb-header d-none d-md-flex row g-0 m-0 w-100">
+                    <div class="col-md-1 justify-content-center"><i class="fa-solid fa-user icon-teal" title="{% translate 'User' %}"></i></div>
+                    <div class="col-md-5 justify-content-center"><i class="fa-solid fa-circle-question me-1 icon-purple"></i>{% translate "Question" %}</div>
+                    <div class="col-md-5 justify-content-center"><i class="fa-solid fa-check-circle me-1 icon-emerald"></i>{% translate "Answer" %}</div>
+                    <div class="col-md-1 justify-content-center"><i class="fa-solid fa-user-shield icon-teal" title="{% translate 'Admin' %}"></i></div>
+                </div>
+
+                <ul id="rows-list"></ul>
+
+                <div id="empty-state" class="d-none p-5 text-center">
+                    <div class="empty-icon d-flex align-items-center justify-content-center mx-auto mb-3 text-secondary"><i class="fa-solid fa-circle-question fa-lg"></i></div>
+                    <h6 class="fw-semibold mb-1">{% translate "No matching entries" %}</h6>
+                    <p class="text-secondary mb-0 text-empty">{% translate "Try adjusting your search or add a new row." %}</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    {% include 'includes/lightbox.html' %}
+
+    <style>
+        /* Exact color match with mix-blend-mode for readability */
+        mark.search-hit {
+            background-color: #fef08a !important; /* Solid bright yellow */
+            color: #713f12 !important;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .ocr-highlight-box {
+            /* We use exactly #fef08a but multiply to keep text readable */
+            background-color: #fef08a !important; 
+            mix-blend-mode: multiply !important;
+            border: 1px solid #facc15 !important;
+            border-radius: 3px !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+            pointer-events: none;
+        }
+    </style>
+
+    <script>
+        function log(msg) {
+            const container = document.getElementById('debug-log-container');
+            if (container) {
+                container.innerHTML += msg + "<br>";
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        window.addEventListener('load', () => {
+            log("Window loaded. Injecting highly precise OCR logic and Regex logic...");
+            
+            // 1. TYPOGRAPHIC WEIGHTING MATH FOR EXACT OCR ALIGNMENT
+            function getCharWeight(ch) {
+                if (ch === ' ') return 0.30;
+                if (/[-.,:;!?'"()\[\]\/\\_]/.test(ch)) return 0.32;
+                if (/[0-9]/.test(ch)) return 0.55;
+                if (/[iljtfr]/.test(ch)) return 0.38;
+                if (/[MWmw@%ÆØÅæøå]/.test(ch)) return 0.95;
+                if (/[A-Z]/.test(ch)) return 0.75;
+                return 0.55;
+            }
+
+            function calculateOffset(fullText, startIdx, matchLen) {
+                let total = 0;
+                for (let i = 0; i < fullText.length; i++) total += getCharWeight(fullText[i]);
+                if (total === 0) total = 1;
+                
+                let prefix = 0;
+                for (let i = 0; i < startIdx; i++) prefix += getCharWeight(fullText[i]);
+                
+                let match = 0;
+                for (let i = startIdx; i < startIdx + matchLen; i++) match += getCharWeight(fullText[i]);
+                
+                return { leftRatio: prefix / total, widthRatio: match / total };
+            }
+
+            window.getOcrHighlightBoxes = function(ocrData, query) {
+                if (!query || !query.trim() || !ocrData) return [];
+                const trimmed = query.trim().toLowerCase();
+                const terms = trimmed.split(/\s+/).filter(t => t.length >= 2);
+                const boxes = [];
+                
+                ocrData.forEach(item => {
+                    const raw = item.text || '';
+                    // Remove leading spaces for boundary check, but keep original for length math
+                    const lower = raw.toLowerCase();
+                    const targets = (trimmed.length > 2 && lower.includes(trimmed)) ? [trimmed] : terms;
+                    
+                    targets.forEach(target => {
+                        let startIdx = 0;
+                        while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
+                            const endIdx = startIdx + target.length;
+                            
+                            // Highly precise typographic math
+                            const { leftRatio, widthRatio } = calculateOffset(raw, startIdx, target.length);
+                            
+                            // Slight padding
+                            const paddingPct = Math.min(item.width * 0.035, 1.8);
+                            const calcLeft = item.left + (leftRatio * item.width);
+                            const calcWidth = widthRatio * item.width;
+                            
+                            const subLeft = Math.max(item.left, calcLeft - paddingPct);
+                            const subWidth = Math.min(item.width, calcWidth + (2 * paddingPct));
+                            
+                            boxes.push({ left: subLeft, top: item.top - 0.3, width: Math.max(subWidth, 2), height: item.height + 0.6 });
+                            startIdx = endIdx;
+                        }
+                    });
+                });
+                return boxes;
+            };
+
+            // 2. REGEX SUBSTRING HIGHLIGHT FIX
+            window.highlightMatch = function(text, query) {
+                let safeText = escapeHTML(text);
+
+                safeText = safeText.replace(/\[hl:(yellow|green|blue|pink|orange)\]/g, '<span class="hl-$1">');
+                safeText = safeText.replace(/\[\/hl\]/g, '</span>');
+                safeText = safeText.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+
+                if (query && query.trim()) {
+                    const trimmedQuery = query.trim();
+                    const escapedPhrase = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    
+                    // Match full phrase first
+                    const phraseRegex = new RegExp('(^|[\\s.,;:!?"\'()\\[\\]\\/\\\\])(' + escapedPhrase + ')(?=[\\s.,;:!?"\'()\\[\\]\\/\\\\]|$)(?![^<]*>)', 'gi'); 
+                    
+                    if (phraseRegex.test(safeText)) {
+                        const replaceGlobal = new RegExp('(^|[\\s.,;:!?"\'()\\[\\]\\/\\\\])(' + escapedPhrase + ')(?=[\\s.,;:!?"\'()\\[\\]\\/\\\\]|$)(?![^<]*>)', 'gi');
+                        safeText = safeText.replace(replaceGlobal, '$1<mark class="search-hit">$2</mark>');
+                    } else {
+                        // Match individual words (falling back without Lookbehind for Safari compatibility)
+                        const terms = trimmedQuery.split(/\s+/).filter(t => t.length >= 2).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+                        if (terms.length > 0) {
+                            // By grouping $1 as the leading punctuation/space, we prevent matching substrings
+                            // e.g. "udbetalingen" won't match "ing" because the char before "ing" is "l" (not a space/punctuation).
+                            const regex = new RegExp('(^|[\\s.,;:!?"\'()\\[\\]\\/\\\\])(' + terms.join('|') + ')(?=[\\s.,;:!?"\'()\\[\\]\\/\\\\]|$)(?![^<]*>)', 'gi');
+                            safeText = safeText.replace(regex, '$1<mark class="search-hit">$2</mark>');
+                        }
+                    }
+                }
+
+                return safeText;
+            };
+
+            // Force a re-render so our new functions are used immediately!
+            if (typeof renderRows === 'function') {
+                log("Re-rendering rows with deep debug logic...");
+                renderRows();
+            }
+        });
+    </script>
+{% endblock %}
