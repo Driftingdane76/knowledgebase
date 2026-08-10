@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <div class="alert alert-warning py-2 mb-3 fw-bold text-center">FINAL VERIFIED HIGHLIGHT SANDBOX</div>
+            <div class="alert alert-warning py-2 mb-3 fw-bold text-center">Dummy data used</div>
 
             <!-- Table -->
             <div class="kb-table-wrap bg-body shadow-sm mb-4">
@@ -109,8 +109,8 @@
 
     {% include 'includes/lightbox.html' %}
 
-    <!-- OVERRIDING ASSETS FOR TEST PAGE (CACHE BUSTED) -->
-    <link href="{% static 'css/test_app.css' %}?v=999" rel="stylesheet">
-    <script src="{% static 'js/test_app.js' %}?v=999"></script>
+    <!-- OVERRIDING ASSETS FOR TEST PAGE -->
+    <link href="{% static 'css/test_app.css' %}" rel="stylesheet">
+    <script src="{% static 'js/test_app.js' %}"></script>
 
 {% endblock %}

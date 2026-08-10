@@ -969,21 +969,33 @@
             }
         }
 
-        function savePageToServer(payload, cb) {
-            fetch('/api/pages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-                body: JSON.stringify(payload)
-            }).then(r => r.json()).then(data => {
-                if (data.page) {
-                    const idx = activePages.findIndex(p => p.id === data.page.id);
-                    if (idx >= 0) { activePages[idx] = data.page; } else { activePages.unshift(data.page); }
-                }
-                if (data.categories) { activeCategories = data.categories; }
-                if (data.trendingTags) { activeTrendingTags = data.trendingTags; renderTrendingTags(); }
-                if (cb) cb(); else { renderCategories(); fetchSearch(); }
-            }).catch(e => { console.error('Save error:', e); alert('Save failed. Check console.'); });
+function savePageToServer(payload, cb) {
+    fetch('/api/pages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify(payload)
+    })
+    .then(async r => {
+        if (!r.ok) {
+            // If Azure returns a 504 or 500 HTML page, catch it cleanly
+            let errText = await r.text();
+            throw new Error(`HTTP ${r.status}: Server failed to respond properly.`);
         }
+        return r.json();
+    })
+    .then(data => {
+        if (data.page) {
+            const idx = activePages.findIndex(p => p.id === data.page.id);
+            if (idx >= 0) { activePages[idx] = data.page; } else { activePages.unshift(data.page); }
+        }
+        if (data.categories) { activeCategories = data.categories; }
+        if (data.trendingTags) { activeTrendingTags = data.trendingTags; renderTrendingTags(); }
+        if (cb) cb(); else { renderCategories(); fetchSearch(); }
+    }).catch(e => { 
+        console.error('Save error:', e); 
+        alert('Save failed: ' + e.message); 
+    });
+}
 
         function deleteRow(pageId) {
             if (!confirm('Delete this entry?')) return;

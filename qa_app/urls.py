@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/pages', views.save_page, name='save_page'),
     path('api/pages/<str:page_id>', views.delete_page, name='delete_page'),
     path('test/highlight-precision/', views.test_highlight_precision_view, name='test_highlight_precision'),
+    path('test/final-highlight/', views.test_final_highlight_view, name='test_final_highlight'),
 ]
+# Trigger reload

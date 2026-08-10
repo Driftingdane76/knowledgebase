@@ -494,3 +494,20 @@ def test_highlight_precision_view(request):
     return render(request, 'test_highlight_precision.html')
 
 
+def test_final_highlight_view(request):
+    """
+    Renders the final sandbox layout with isolated JS and CSS for the highlight logic.
+    """
+    can_edit = True
+    is_superuser = False
+    
+    if _UI_TESTING_BYPASS_AUTH:
+        is_superuser = True
+    elif request.user.is_authenticated:
+        is_superuser = request.user.is_superuser
+            
+    context = {
+        'can_edit': can_edit,
+        'is_superuser': is_superuser,
+    }
+    return render(request, 'test_index.html', context)
