@@ -143,8 +143,7 @@ def generate_and_seed(total_cases=50):
             Tag.objects.get_or_create(name=clean_tag_name)
     
     print("Creating Category...")
-    cat_ui = Category.objects.create(id="UI-Pro-Snippets", name="Professional UI Snippets")
-    
+    cat_ui, _ = Category.objects.get_or_create(name="Professional UI Snippets")    
     print(f"\nStarting Redaction API pipeline for {total_cases} dynamic multi-layout UI component snippets...")
     
     with sync_playwright() as p:
