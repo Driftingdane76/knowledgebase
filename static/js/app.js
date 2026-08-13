@@ -545,18 +545,8 @@
                 const trimmedQuery = query.trim();
                 const escapedPhrase = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 
-                const phraseRegex = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + escapedPhrase + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
-                
-                if (phraseRegex.test(safeText)) {
-                    const replaceGlobal = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + escapedPhrase + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
-                    safeText = safeText.replace(replaceGlobal, '$1<span class="search-hit">$2</span>');
-                } else if (!trimmedQuery.includes(' ')) {
-                    const terms = trimmedQuery.split(/\s+/).filter(t => t.length >= 2).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-                    if (terms.length > 0) {
-                        const regex = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + terms.join('|') + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
-                        safeText = safeText.replace(regex, '$1<span class="search-hit">$2</span>');
-                    }
-                }
+                const replaceGlobal = new RegExp('(^|[^a-zA-Z0-9æøåÆØÅ])(' + escapedPhrase + ')(?=[^a-zA-Z0-9æøåÆØÅ]|$)(?![^<]*>)', 'gi');
+                safeText = safeText.replace(replaceGlobal, '$1<span class="search-hit">$2</span>');
             }
 
             return safeText;
@@ -588,41 +578,74 @@
 
         function getOcrHighlightBoxes(ocrData, query) {
             if (!query || !query.trim() || !ocrData) return [];
-            const trimmed = query.trim().toLowerCase();
-            const terms = trimmed.split(/\s+/).filter(t => t.length >= 2);
+            const query_lower = query.trim().toLowerCase();
+            const query_terms = query_lower.split(/\s+/).filter(t => t.length > 0);
             const rawBoxes = [];
-            
-            ocrData.forEach(item => {
-                const raw = item.text || '';
-                const lower = raw.toLowerCase();
-                const targets = (trimmed.length > 2 && lower.includes(trimmed)) ? [trimmed] : terms;
 
-                targets.forEach(target => {
-                    let startIdx = 0;
-                    while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
-                        const endIdx = startIdx + target.length;
-                        
-                        const { leftRatio, widthRatio } = calculateOffset(raw, startIdx, target.length);
-                        const paddingPct = Math.min(item.width * 0.035, 1.8);
-                        
-                        const calcLeft = item.left + (leftRatio * item.width);
-                        const calcWidth = widthRatio * item.width;
-                        
-                        const subLeft = Math.max(item.left, calcLeft - paddingPct);
-                        const subWidth = Math.min(item.width, calcWidth + (2 * paddingPct));
-
-                        rawBoxes.push({
-                            left: subLeft,
-                            top: item.top - 0.5,
-                            right: subLeft + Math.max(subWidth, 2),
-                            bottom: item.top + item.height + 0.5,
-                            top_orig: item.top,
-                            text: raw.substring(startIdx, endIdx)
-                        });
-                        startIdx = endIdx;
+            if (query_terms.length > 1) {
+                let i = 0;
+                while (i <= ocrData.length - query_terms.length) {
+                    let match = true;
+                    for (let j = 0; j < query_terms.length; j++) {
+                        if (!(ocrData[i+j].text || '').toLowerCase().includes(query_terms[j])) {
+                            match = false;
+                            break;
+                        }
                     }
+                    if (match) {
+                        const first = ocrData[i];
+                        const last = ocrData[i + query_terms.length - 1];
+                        const topVals = ocrData.slice(i, i + query_terms.length).map(w => w.top);
+                        const topOrigVals = ocrData.slice(i, i + query_terms.length).map(w => w.top_orig || w.top);
+                        const bottomVals = ocrData.slice(i, i + query_terms.length).map(w => w.top + (w.height || 0));
+                        
+                        rawBoxes.push({
+                            left: first.left,
+                            top: Math.min(...topVals) - 0.5,
+                            right: (last.left + last.width),
+                            bottom: Math.max(...bottomVals) + 0.5,
+                            top_orig: Math.min(...topOrigVals),
+                            text: query.trim()
+                        });
+                        i += query_terms.length;
+                        continue;
+                    }
+                    i++;
+                }
+            }
+
+            if (rawBoxes.length === 0) {
+                const termsToSearch = query_lower.includes(' ') ? query_terms : [query_lower];
+                
+                ocrData.forEach(item => {
+                    const raw = item.text || '';
+                    const lower = raw.toLowerCase();
+                    
+                    termsToSearch.forEach(target => {
+                        let startIdx = 0;
+                        while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
+                            const endIdx = startIdx + target.length;
+                            const { leftRatio, widthRatio } = calculateOffset(raw, startIdx, target.length);
+                            const paddingPct = Math.min(item.width * 0.035, 1.8);
+                            
+                            const calcLeft = item.left + (leftRatio * item.width);
+                            const calcWidth = widthRatio * item.width;
+                            const subLeft = Math.max(item.left, calcLeft - paddingPct);
+                            const subWidth = Math.min(item.width, calcWidth + (2 * paddingPct));
+
+                            rawBoxes.push({
+                                left: subLeft,
+                                top: item.top - 0.5,
+                                right: subLeft + Math.max(subWidth, 2),
+                                bottom: item.top + item.height + 0.5,
+                                top_orig: item.top,
+                                text: raw.substring(startIdx, endIdx)
+                            });
+                            startIdx = endIdx;
+                        }
+                    });
                 });
-            });
+            }
 
             if (rawBoxes.length === 0) return [];
             
@@ -1105,7 +1128,7 @@ function savePageToServer(payload, cb) {
             if (q && img.ocrData && img.ocrData.length) {
                 getOcrHighlightBoxes(img.ocrData, q).forEach(b => {
                     const box = document.createElement('div');
-                    box.className = 'search-hit position-absolute';
+                    box.className = 'search-hit position-absolute lightbox-hit';
                     box.style.left = `${b.left}%`; box.style.top = `${b.top}%`;
                     box.style.width = `${b.width}%`; box.style.height = `${b.height}%`;
                     box.style.display = 'flex';

@@ -1,3 +1,27 @@
+function getCharWeight(ch) {
+    if (ch === ' ') return 0.30;
+    if (/[-.,:;!?'"()\[\]\/\\_]/.test(ch)) return 0.32;
+    if (/[0-9]/.test(ch)) return 0.55;
+    if (/[iljtfr]/.test(ch)) return 0.38;
+    if (/[MWmw@%ÆØÅæøå]/.test(ch)) return 0.95;
+    if (/[A-Z]/.test(ch)) return 0.75;
+    return 0.55;
+}
+
+function calculateOffset(fullText, startIdx, matchLen) {
+    let total = 0;
+    for (let i = 0; i < fullText.length; i++) total += getCharWeight(fullText[i]);
+    if (total === 0) total = 1;
+
+    let prefix = 0;
+    for (let i = 0; i < startIdx; i++) prefix += getCharWeight(fullText[i]);
+
+    let match = 0;
+    for (let i = startIdx; i < startIdx + matchLen; i++) match += getCharWeight(fullText[i]);
+
+    return { leftRatio: prefix / total, widthRatio: match / total };
+}
+
 function getOcrHighlightBoxes(ocrData, query) {
     if (!query || !query.trim() || !ocrData) return [];
     const trimmed = query.trim().toLowerCase();

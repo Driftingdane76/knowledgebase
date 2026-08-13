@@ -1,16 +1,3 @@
-/* Overrides for test environment to verify highlight boxes */
-
-.ocr-highlight-layer .search-hit.position-absolute,
-#lightbox-highlight-container .search-hit.position-absolute {
-    background-color: rgba(250, 204, 21, 0.3) !important;
-    border: 1px solid rgba(250, 204, 21, 0.8) !important;
-    color: transparent !important;
-    box-shadow: none !important;
-    border-radius: 2px !important;
-}
-
-[data-bs-theme="dark"] .ocr-highlight-layer .search-hit.position-absolute,
-[data-bs-theme="dark"] #lightbox-highlight-container .search-hit.position-absolute {
-    background-color: rgba(250, 204, 21, 0.25) !important;
-    border: 1px solid rgba(250, 204, 21, 0.7) !important;
-}
+/* test_app.css — No overrides needed. */
+/* .search-hit is fully defined in app.css: solid #fef08a background + #713f12 dark text. */
+/* That definition applies correctly to both text spans and absolute-positioned image overlay boxes. */
