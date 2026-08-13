@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCR Highlight Test</title>
+</head>
+<body>
+    <script>
+        function getCharWeight(ch) {
+            if (ch === ' ') return 0.30;
+            if (/[-.,:;!?'"()\[\]\/\\_]/.test(ch)) return 0.32;
+            if (/[0-9]/.test(ch)) return 0.55;
+            if (/[iljtfr]/.test(ch)) return 0.38;
+            if (/[MWmw@%ÆØÅæøå]/.test(ch)) return 0.95;
+            if (/[A-Z]/.test(ch)) return 0.75;
+            return 0.55;
+        }
+
+        function calculateOffset(fullText, startIdx, matchLen) {
+            let total = 0;
+            for (let i = 0; i < fullText.length; i++) total += getCharWeight(fullText[i]);
+            if (total === 0) total = 1;
+            
+            let prefix = 0;
+            for (let i = 0; i < startIdx; i++) prefix += getCharWeight(fullText[i]);
+            
+            let match = 0;
+            for (let i = startIdx; i < startIdx + matchLen; i++) match += getCharWeight(fullText[i]);
+            
+            return { leftRatio: prefix / total, widthRatio: match / total };
+        }
+
+        function getOcrHighlightBoxesOld(ocrData, query) {
+            if (!query || !query.trim() || !ocrData) return [];
+            const query_lower = query.trim().toLowerCase();
+            const query_terms = query_lower.split(/\s+/).filter(t => t.length > 0);
+            const rawBoxes = [];
+
+            if (query_terms.length > 1) {
+                let i = 0;
+                while (i <= ocrData.length - query_terms.length) {
+                    let match = true;
+                    for (let j = 0; j < query_terms.length; j++) {
+                        if (!(ocrData[i+j].text || '').toLowerCase().includes(query_terms[j])) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        const first = ocrData[i];
+                        const last = ocrData[i + query_terms.length - 1];
+                        const topVals = ocrData.slice(i, i + query_terms.length).map(w => w.top);
+                        const topOrigVals = ocrData.slice(i, i + query_terms.length).map(w => w.top_orig || w.top);
+                        const bottomVals = ocrData.slice(i, i + query_terms.length).map(w => w.top + (w.height || 0));
+                        
+                        rawBoxes.push({
+                            text: query.trim(),
+                            type: 'consecutive-word-match'
+                        });
+                        i += query_terms.length;
+                        continue;
+                    }
+                    i++;
+                }
+            }
+
+            if (rawBoxes.length === 0) {
+                const termsToSearch = query_lower.includes(' ') ? query_terms : [query_lower];
+                
+                ocrData.forEach(item => {
+                    const raw = item.text || '';
+                    const lower = raw.toLowerCase();
+                    
+                    termsToSearch.forEach(target => {
+                        let startIdx = 0;
+                        while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
+                            const endIdx = startIdx + target.length;
+                            rawBoxes.push({
+                                text: raw.substring(startIdx, endIdx),
+                                type: 'single-word-fallback'
+                            });
+                            startIdx = endIdx;
+                        }
+                    });
+                });
+            }
+            return rawBoxes;
+        }
+
+        function getOcrHighlightBoxesNew(ocrData, query) {
+            if (!query || !query.trim() || !ocrData) return [];
+            const query_lower = query.trim().toLowerCase();
+            const query_terms = query_lower.split(/\s+/).filter(t => t.length > 0);
+            const rawBoxes = [];
+
+            if (query_terms.length > 1) {
+                let i = 0;
+                while (i <= ocrData.length - query_terms.length) {
+                    let match = true;
+                    for (let j = 0; j < query_terms.length; j++) {
+                        if (!(ocrData[i+j].text || '').toLowerCase().includes(query_terms[j])) {
+                            match = false;
+                            break;
+                        }
+                    }
+                    if (match) {
+                        const first = ocrData[i];
+                        const last = ocrData[i + query_terms.length - 1];
+                        rawBoxes.push({
+                            text: query.trim(),
+                            type: 'consecutive-word-match'
+                        });
+                        i += query_terms.length;
+                        continue;
+                    }
+                    i++;
+                }
+            }
+
+            if (rawBoxes.length === 0) {
+                // FIXED: Do not split the query into individual terms for substring fallback.
+                // Keep the whole query as a single phrase so it only highlights exact matches.
+                const termsToSearch = [query_lower];
+                
+                ocrData.forEach(item => {
+                    const raw = item.text || '';
+                    const lower = raw.toLowerCase();
+                    
+                    termsToSearch.forEach(target => {
+                        let startIdx = 0;
+                        while ((startIdx = lower.indexOf(target, startIdx)) !== -1) {
+                            const endIdx = startIdx + target.length;
+                            rawBoxes.push({
+                                text: raw.substring(startIdx, endIdx),
+                                type: 'exact-phrase-fallback'
+                            });
+                            startIdx = endIdx;
+                        }
+                    });
+                });
+            }
+            return rawBoxes;
+        }
+
+        const mockOcrData = [
+            { text: "Mere end 100 resultater", left: 10, top: 10, width: 200, height: 20 },
+            { text: "Som aftalt fremsender jeg hermed mine oplysninger.", left: 10, top: 40, width: 300, height: 20 },
+        ];
+
+        const query = "Mere end 100 resultater";
+        
+        console.log("=== OLD BEHAVIOR ===");
+        const oldResult = getOcrHighlightBoxesOld(mockOcrData, query);
+        console.log(JSON.stringify(oldResult, null, 2));
+        
+        console.log("\n=== NEW BEHAVIOR ===");
+        const newResult = getOcrHighlightBoxesNew(mockOcrData, query);
+        console.log(JSON.stringify(newResult, null, 2));
+        
+        // Write results to page for easy visual verification
+        document.body.innerHTML += "<h3>OLD BEHAVIOR</h3><pre>" + JSON.stringify(oldResult, null, 2) + "</pre>";
+        document.body.innerHTML += "<h3>NEW BEHAVIOR</h3><pre>" + JSON.stringify(newResult, null, 2) + "</pre>";
+    </script>
+</body>
+</html>

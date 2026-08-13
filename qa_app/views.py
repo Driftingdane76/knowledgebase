@@ -91,12 +91,11 @@ _UI_TESTING_BYPASS_AUTH = False
 
 _CATEGORIES_CACHE = None
 
-def _serialize_categories(force_refresh=False):
-    global _CATEGORIES_CACHE
-    if _CATEGORIES_CACHE is not None and not force_refresh and not _IS_TESTING:
-        return _CATEGORIES_CACHE
-        
-    data = [
+# views.py
+
+def _serialize_categories():
+    """Fetches categories directly from DB with annotated page counts."""
+    return [
         {
             'id': c.id,
             'name': c.name,
@@ -105,8 +104,7 @@ def _serialize_categories(force_refresh=False):
         }
         for c in Category.objects.annotate(page_count=Count('pages')).order_by('created_at')
     ]
-    _CATEGORIES_CACHE = data
-    return data
+
 
 def invalidate_categories_cache():
     global _CATEGORIES_CACHE

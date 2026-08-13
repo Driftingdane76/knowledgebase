@@ -3,12 +3,13 @@ from django.utils import timezone
 from django.contrib.postgres.indexes import GinIndex
 
 
+# models.py
+
 class Category(models.Model):
     """
-    Represents a classification category for Knowledge Pages.
-    Categories are fundamental for organizing and filtering pages in the knowledgebase.
+    Standard Django Category model.
+    Django automatically provides an auto-incrementing integer 'id' primary key.
     """
-    id = models.CharField(max_length=100, primary_key=True)
     name = models.CharField(max_length=255, db_index=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
 

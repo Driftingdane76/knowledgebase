@@ -28,7 +28,8 @@ class CategoryAdmin(admin.ModelAdmin):
     Customizes the list display and allows sorting by the number of associated pages.
     """
     list_display = ('id', 'name', 'created_at', 'get_page_count')
-    search_fields = ('id', 'name')
+    list_editable = ('name',)
+    search_fields = ('=id', 'name')
     list_filter = ('created_at',)
     ordering = ('created_at',)
 
@@ -93,6 +94,7 @@ class KnowledgePageAdmin(admin.ModelAdmin):
     Supports viewing inline images and filtering by properties.
     """
     list_display = ('id', 'title', 'category', 'date', 'username', 'created_at', 'has_images')
+    list_editable = ('category',)
     list_filter = ('category', 'date', 'username', 'created_at')
     search_fields = ('title', 'question_text', 'resolution_text', 'username', 'category__name')
     ordering = ('-created_at',)
