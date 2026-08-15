@@ -5,17 +5,17 @@ def seed_data(apps, schema_editor):
     KnowledgePage = apps.get_model('qa_app', 'KnowledgePage')
     Tag = apps.get_model('qa_app', 'Tag')
 
-    # 1. Categories (PostgreSQL generates id=1, 2, 3, 4)
+    # 1. Categories (Auto-increment integer IDs)
     cat_ejo, _ = Category.objects.get_or_create(name='EJO')
     cat_dag, _ = Category.objects.get_or_create(name='DAG')
     cat_daf, _ = Category.objects.get_or_create(name='DAF')
     cat_boet, _ = Category.objects.get_or_create(name='BOET')
 
-    # 2. Tags
+    # 2. Tags (Auto-increment integer IDs)
     tag_names = ['kasko', 'nemkonto', 'mitid', 'crm', 'skade', 'udbetaling', 'godkendelse', 'stenslag', 'fuldmagt', 'dødsbo']
     tags_dict = {t: Tag.objects.get_or_create(name=t)[0] for t in tag_names}
 
-    # 3. 22 Q&A records across all 4 categories (No IDs)
+    # 3. 22 Q&A records (No IDs - looked up by title)
     dataset = [
         # --- EJO (Records 1 - 5) ---
         {
