@@ -288,7 +288,7 @@ def categories(request):
             category = Category.objects.create(name=name)
 
         invalidate_categories_cache()
-        return JsonResponse({'categories': _serialize_categories(force_refresh=True)})
+        return JsonResponse({'categories': _serialize_categories()})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -308,7 +308,7 @@ def delete_category(request, cat_id):
     try:
         Category.objects.filter(id=cat_id).delete()
         invalidate_categories_cache()
-        return JsonResponse({'categories': _serialize_categories(force_refresh=True)})
+        return JsonResponse({'categories': _serialize_categories()})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
@@ -449,7 +449,7 @@ def save_page(request):
         return JsonResponse({
             'success': True,
             'page': _serialize_page(page),
-            'categories': _serialize_categories(force_refresh=True),
+            'categories': _serialize_categories(),
             'trendingTags': _serialize_trending_tags(),
         })
     except Exception as e:
@@ -486,7 +486,7 @@ def delete_page(request, page_id):
             
         return JsonResponse({
             'success': True,
-            'categories': _serialize_categories(force_refresh=True),
+            'categories': _serialize_categories(),
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)

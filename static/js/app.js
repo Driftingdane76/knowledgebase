@@ -1404,13 +1404,22 @@ function savePageToServer(payload, cb) {
                     activeCategories = data.categories || [];
                     activeTrendingTags = data.trendingTags || [];
                     renderTrendingTags();
-                    if (selectedCategoryId === catId) { selectedCategoryId = null; }
+                    if (String(selectedCategoryId) === String(catId)) { selectedCategoryId = null; }
                     renderCategories(); fetchSearch();
                 })
                 .catch(e => console.error('Error deleting category:', e));
         };
 
         function renderCategories() {
+            // Find the container holding both the input and the icon (usually an .input-group)
+            const searchWrapper = categorySearchInput.closest('.input-group') || categorySearchInput.parentElement;
+
+            if (activeCategories.length > 7) {
+                searchWrapper.style.display = '';
+            } else {
+                searchWrapper.style.display = 'none';
+                categorySearchInput.value = ''; // clear any active filter when hidden
+            }
             const query = categorySearchInput.value.toLowerCase().trim();
             categoriesList.innerHTML = '';
             const totalCount = paginationMeta.total !== undefined ? paginationMeta.total : activePages.length;
@@ -1418,7 +1427,7 @@ function savePageToServer(payload, cb) {
             const allLi = document.createElement('li');
             allLi.className = 'nav-item';
             allLi.innerHTML = `
-            <a href="#" class="nav-link cat-link d-flex justify-content-between align-items-center ${selectedCategoryId === null ? 'active' : ''}" data-id="null" onclick="selectCategory(null); return false;">
+            <a href="#" class="nav-link cat-link category-item d-flex justify-content-between align-items-center ${selectedCategoryId === null ? 'active' : ''}" data-id="null" onclick="selectCategory(null); return false;">
                 <div class="d-flex align-items-center gap-2 overflow-hidden text-nowrap">
                     <i class="fa-solid fa-list-check fa-sm text-primary-subtle"></i>
                     <span class="category-name text-truncate cat-name-text">All Questions</span>
@@ -1431,7 +1440,9 @@ function savePageToServer(payload, cb) {
             activeCategories.filter(cat => !query || cat.name.toLowerCase().includes(query)).forEach(cat => {
                 const li = document.createElement('li');
                 li.className = 'nav-item category-item-wrap';
-                if (editingCategoryId === cat.id) {
+                
+                // FIX 1: Cast both to strings for rename mode
+                if (String(editingCategoryId) === String(cat.id)) {
                     li.innerHTML = `
                     <div class="px-2 py-1" onclick="event.stopPropagation()">
                         <div class="input-group input-group-sm">
@@ -1444,7 +1455,8 @@ function savePageToServer(payload, cb) {
                 } else {
                     const pageCount = cat.pageCount !== undefined ? cat.pageCount : 0;
                     li.innerHTML = `
-                    <a href="#" class="nav-link cat-link d-flex justify-content-between align-items-center ${String(selectedCategoryId) === String(cat.id) ? 'active' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}'); return false;">
+                    <!-- FIX 2: Cast both to strings for active class -->
+                    <a href="#" class="nav-link cat-link category-item d-flex justify-content-between align-items-center ${String(selectedCategoryId) === String(cat.id) ? 'active' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}'); return false;">
                         <div class="d-flex align-items-center gap-2 overflow-hidden text-nowrap">
                             <i class="fa-solid fa-tag fa-sm text-primary-subtle"></i>
                             <span class="category-name text-truncate cat-name-text">${escapeHTML(cat.name)}</span>
@@ -1480,8 +1492,8 @@ function savePageToServer(payload, cb) {
                 const badge = document.createElement('span');
                 const isSelected = currentQ === tag.name.toLowerCase();
                 badge.className = isSelected
-                    ? 'badge rounded-pill bg-success text-white border border-success px-2 py-1 cursor-pointer text-xs shadow-sm'
-                    : 'badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1 cursor-pointer text-xs';
+                    ? 'badge rounded-pill bg-success-subtle text-black-50 px-2 py-1 cursor-pointer text-xs shadow-sm'
+                    : 'badge rounded-pill bg-primary-subtle text-black-50 px-2 py-1 cursor-pointer text-xs';
                 badge.textContent = `${tag.name} (${tag.count})`;
                 badge.title = isSelected ? `Fjern filter: ${tag.name}` : `Filtrér efter ${tag.name}`;
                 badge.onclick = () => {
