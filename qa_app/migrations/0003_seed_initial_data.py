@@ -35,7 +35,7 @@ def seed_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('qa_app', '0001_initial'),  # or whatever your latest migration number is
+        ('qa_app', '0002_alter_knowledgepage_id_alter_pageimage_id'),  # or whatever your latest migration number is
     ]
 
     operations = [
