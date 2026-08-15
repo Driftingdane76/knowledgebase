@@ -41,7 +41,6 @@ class KnowledgePage(models.Model):
     The core entity representing a single Question & Answer entry in the knowledgebase.
     Stores the user's question, the resolution, associated category, and dynamically extracted tags.
     """
-    id = models.CharField(max_length=100, primary_key=True)
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name='pages', db_index=True
     )
@@ -80,7 +79,6 @@ class PageImage(models.Model):
     Stores the physical file, the raw extracted OCR text, and the parsed word coordinates (ocr_data)
     for UI highlighting and redaction purposes.
     """
-    id = models.CharField(max_length=100, primary_key=True)
     page = models.ForeignKey(
         KnowledgePage, on_delete=models.CASCADE, related_name='images', db_index=True
     )

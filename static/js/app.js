@@ -302,7 +302,7 @@
                 addRowBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const newRowId = 'page-' + Date.now();
-                    const defaultCatId = selectedCategoryId || (activeCategories.length > 0 ? activeCategories[0].id : 'cat-1');
+                    const defaultCatId = selectedCategoryId || (activeCategories.length > 0 ? activeCategories[0].id : null);
                     const newPage = {
                         id: newRowId, categoryId: defaultCatId, title: 'New Question',
                         date: new Date().toISOString().split('T')[0],
@@ -1444,7 +1444,7 @@ function savePageToServer(payload, cb) {
                 } else {
                     const pageCount = cat.pageCount !== undefined ? cat.pageCount : 0;
                     li.innerHTML = `
-                    <a href="#" class="nav-link cat-link d-flex justify-content-between align-items-center ${selectedCategoryId === cat.id ? 'active' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}'); return false;">
+                    <a href="#" class="nav-link cat-link d-flex justify-content-between align-items-center ${String(selectedCategoryId) === String(cat.id) ? 'active' : ''}" data-id="${cat.id}" onclick="selectCategory('${cat.id}'); return false;">
                         <div class="d-flex align-items-center gap-2 overflow-hidden text-nowrap">
                             <i class="fa-solid fa-tag fa-sm text-primary-subtle"></i>
                             <span class="category-name text-truncate cat-name-text">${escapeHTML(cat.name)}</span>
@@ -1503,11 +1503,12 @@ function savePageToServer(payload, cb) {
             const q = searchInput.value.toLowerCase().trim();
             rowsList.innerHTML = '';
             let filtered = activePages;
-            if (selectedCategoryId !== null) { filtered = filtered.filter(p => p.categoryId === selectedCategoryId); }
-
+            if (selectedCategoryId !== null) { 
+                filtered = filtered.filter(p => String(p.categoryId) === String(selectedCategoryId)); 
+            }
             categoryTitleDisplay.textContent = selectedCategoryId === null
                 ? (categoryTitleDisplay.getAttribute('data-default-title') || 'All Questions')
-                : (activeCategories.find(c => c.id === selectedCategoryId)?.name || 'Filtered Category');
+                : (activeCategories.find(c => String(c.id) === String(selectedCategoryId))?.name || 'Filtered Category');
 
             filtered = filtered.filter(p => {
                 if (!q) return true;

@@ -142,10 +142,13 @@ def generate_and_seed(total_cases=50):
         if clean_tag_name:
             Tag.objects.get_or_create(name=clean_tag_name)
     
-    print("Creating Category...")
-    cat_ui, _ = Category.objects.get_or_create(name="Professional UI Snippets")    
+    print("Creating Categories...")
+    cat_ejo, _ = Category.objects.get_or_create(name="EJO")
+    cat_dag, _ = Category.objects.get_or_create(name="DAG")
+    cat_daf, _ = Category.objects.get_or_create(name="DAF")
+    cat_daf, _ = Category.objects.get_or_create(name="BOET")   
     print(f"\nStarting Redaction API pipeline for {total_cases} dynamic multi-layout UI component snippets...")
-    
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page_ctx = browser.new_page(device_scale_factor=2)
@@ -175,9 +178,16 @@ def generate_and_seed(total_cases=50):
             
             qa_title, qa_question, qa_answer = get_random_danish_qa()
             
+            # Distribute items based on the loop index (i runs from 1 to 50)
+            if i <= 10:
+                current_category = cat_ejo  # First 10 records
+            elif i <= 40:
+                current_category = cat_dag  # Next 30 records (11 through 40)
+            else:
+                current_category = cat_daf  # Final 10 records (41 through 50)
+
             db_page = KnowledgePage.objects.create(
-                id=f"page-pro-snippet-{i}",
-                category=cat_ui,
+                category=current_category,
                 title=qa_title,
                 date=timezone.now().date(),
                 username="IFagent",
@@ -187,7 +197,6 @@ def generate_and_seed(total_cases=50):
             
             img_filename = f"pro_snippet_{i}.png"
             image_instance = PageImage(
-                id=f"img-pro-snippet-{i}",
                 page=db_page,
                 name=img_filename,
                 extracted_text=extracted_text,

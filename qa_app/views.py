@@ -275,15 +275,17 @@ def categories(request):
             return JsonResponse({'error': 'Category name cannot be empty'}, status=400)
 
         if cat_id:
-            category, created = Category.objects.get_or_create(
-                id=cat_id, defaults={'name': name}
-            )
-            if not created:
-                category.name = name
-                category.save(update_fields=['name'])
+            try:
+                category, created = Category.objects.get_or_create(
+                    id=cat_id, defaults={'name': name}
+                )
+                if not created:
+                    category.name = name
+                    category.save(update_fields=['name'])
+            except ValueError:
+                return JsonResponse({'error': 'Invalid Category ID format'}, status=400)
         else:
-            cat_id = f'cat-{int(timezone.now().timestamp() * 1000)}'
-            category = Category.objects.create(id=cat_id, name=name)
+            category = Category.objects.create(name=name)
 
         invalidate_categories_cache()
         return JsonResponse({'categories': _serialize_categories(force_refresh=True)})
@@ -323,7 +325,7 @@ def save_page(request):
     try:
         page_data = json.loads(request.body)
         page_id = page_data.get('id')
-        category_id = page_data.get('categoryId') or 'cat-1'
+        category_id = page_data.get('categoryId')
         title = page_data.get('title', 'Untitled Page')
         date_str = page_data.get('date', '') or None   # '' → None for DateField
         username = page_data.get('username', 'anonymous')
@@ -332,11 +334,17 @@ def save_page(request):
         incoming_images = page_data.get('images', [])
 
         # Resolve category
-        category = Category.objects.filter(id=category_id).first()
+        category = None
+        if category_id:
+            try:
+                category = Category.objects.filter(id=category_id).first()
+            except ValueError:
+                pass
+
         if not category:
             category = Category.objects.first()
             if not category:
-                category = Category.objects.create(id='cat-1', name='General')
+                category = Category.objects.create(name='General')
 
         if not page_id:
             page_id = f'page-{int(timezone.now().timestamp() * 1000)}'

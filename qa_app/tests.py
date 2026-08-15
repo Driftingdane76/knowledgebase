@@ -40,8 +40,8 @@ class BackendLogicTests(TransactionTestCase):
         self.client.login(email='admin@test.com', password='password')
 
         # Create standard test categories
-        self.cat1 = Category.objects.create(id='cat-1', name='Database')
-        self.cat2 = Category.objects.create(id='cat-2', name='Frontend')
+        self.cat1 = Category.objects.create(name='Database')
+        self.cat2 = Category.objects.create(name='Frontend')
         
         # Base64 test image data (a tiny 1x1 transparent GIF)
         self.base64_gif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
@@ -72,10 +72,10 @@ class BackendLogicTests(TransactionTestCase):
         self.assertIn('categories', data)
         self.assertEqual(len(data['categories']), 2)
         # Database category should have 1 page
-        db_cat = next(c for c in data['categories'] if c['id'] == 'cat-1')
+        db_cat = next(c for c in data['categories'] if c['id'] == self.cat1.id)
         self.assertEqual(db_cat['pageCount'], 1)
         # Frontend category should have 0 pages
-        fe_cat = next(c for c in data['categories'] if c['id'] == 'cat-2')
+        fe_cat = next(c for c in data['categories'] if c['id'] == self.cat2.id)
         self.assertEqual(fe_cat['pageCount'], 0)
 
         # Verify pages output
@@ -110,19 +110,19 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(data['pages'][0]['id'], 'page-1')
 
         # Filter by Category Database -> matches p1
-        response = self.client.get(reverse('search_pages'), {'category': 'cat-1'})
+        response = self.client.get(reverse('search_pages'), {'category': self.cat1.id})
         data = response.json()
         self.assertEqual(len(data['pages']), 1)
         self.assertEqual(data['pages'][0]['id'], 'page-1')
 
         # Filter by Category Frontend -> matches p2
-        response = self.client.get(reverse('search_pages'), {'category': 'cat-2'})
+        response = self.client.get(reverse('search_pages'), {'category': self.cat2.id})
         data = response.json()
         self.assertEqual(len(data['pages']), 1)
         self.assertEqual(data['pages'][0]['id'], 'page-2')
 
         # Filter by both category and query -> matches p1
-        response = self.client.get(reverse('search_pages'), {'category': 'cat-1', 'q': 'slow'})
+        response = self.client.get(reverse('search_pages'), {'category': self.cat1.id, 'q': 'slow'})
         data = response.json()
         self.assertEqual(len(data['pages']), 1)
         self.assertEqual(data['pages'][0]['id'], 'page-1')
@@ -211,7 +211,7 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(len(data['categories']), 3)  # cat-1, cat-2, and the new one
         new_cat = next(c for c in data['categories'] if c['name'] == 'New Category')
         new_cat_id = new_cat['id']
-        self.assertTrue(new_cat_id.startswith('cat-'))
+        self.assertTrue(isinstance(new_cat_id, int) or str(new_cat_id).isdigit())
 
         # Edit/rename existing category
         payload = {'id': new_cat_id, 'name': 'Renamed Category'}
@@ -257,7 +257,7 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(response.status_code, 403, "CSRF check failed: request was not blocked!")
 
         # 2. Delete endpoint missing CSRF token should return 403 Forbidden
-        response = csrf_client.delete(reverse('delete_category', kwargs={'cat_id': 'cat-1'}))
+        response = csrf_client.delete(reverse('delete_category', kwargs={'cat_id': self.cat1.id}))
         self.assertEqual(response.status_code, 403, "CSRF check failed: DELETE request was not blocked!")
         
         # 3. Providing a valid CSRF token should allow the request
@@ -277,7 +277,7 @@ class BackendLogicTests(TransactionTestCase):
         """Test save_page view for new pages and page updates."""
         # Save new page
         payload = {
-            'categoryId': 'cat-1',
+            'categoryId': self.cat1.id,
             'title': 'Test Page Saving',
             'date': '2026-06-13',
             'username': 'tester',
@@ -330,8 +330,8 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         page_id = response.json()['page']['id']
         page = KnowledgePage.objects.get(id=page_id)
-        # Should fallback to the first available category (cat-1)
-        self.assertEqual(page.category.id, 'cat-1')
+        # Should fallback to the first available category (self.cat1.id)
+        self.assertEqual(page.category.id, self.cat1.id)
 
         # Test fallback when NO categories exist in DB
         Category.objects.all().delete()
@@ -343,14 +343,14 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         page_id2 = response.json()['page']['id']
         page2 = KnowledgePage.objects.get(id=page_id2)
-        # Should create cat-1 General
-        self.assertEqual(page2.category.id, 'cat-1')
+        # Should create General
+        self.assertIsNotNone(page2.category.id)
         self.assertEqual(page2.category.name, 'General')
 
     def test_save_page_with_base64_image(self):
         """Test saving page with base64 image decodes it, saves file to disk, and updates PageImage.file."""
         payload = {
-            'categoryId': 'cat-1',
+            'categoryId': self.cat1.id,
             'title': 'Page with Image',
             'images': [
                 {
@@ -394,7 +394,7 @@ class BackendLogicTests(TransactionTestCase):
         """Test deleting a page or removing an image cleans up file storage."""
         # 1. Create page with image
         payload = {
-            'categoryId': 'cat-1',
+            'categoryId': self.cat1.id,
             'title': 'Page to Delete',
             'images': [
                 {
@@ -479,7 +479,7 @@ class BackendLogicTests(TransactionTestCase):
         mock_ocr.return_value = ("Mocked OCR Text Results", [{'text': 'Mocked', 'left': 10, 'top': 10, 'width': 20, 'height': 5}])
         
         payload = {
-            'categoryId': 'cat-1',
+            'categoryId': self.cat1.id,
             'title': 'OCR Save Test',
             'images': [
                 {
@@ -517,7 +517,7 @@ class TagModelTests(TransactionTestCase):
         KnowledgePage.objects.all().delete()
         Tag.objects.all().delete()
         
-        self.cat = Category.objects.create(id='test-cat', name='Test Category')
+        self.cat = Category.objects.create(name='Test Category')
         self.page1 = KnowledgePage.objects.create(id='p1', category=self.cat, title='Page 1')
         self.page2 = KnowledgePage.objects.create(id='p2', category=self.cat, title='Page 2')
 
