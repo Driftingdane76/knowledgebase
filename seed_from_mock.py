@@ -146,7 +146,7 @@ def generate_and_seed(total_cases=50):
     cat_ejo, _ = Category.objects.get_or_create(name="EJO")
     cat_dag, _ = Category.objects.get_or_create(name="DAG")
     cat_daf, _ = Category.objects.get_or_create(name="DAF")
-    cat_daf, _ = Category.objects.get_or_create(name="BOET")   
+    cat_boet, _ = Category.objects.get_or_create(name="BOET")
     print(f"\nStarting Redaction API pipeline for {total_cases} dynamic multi-layout UI component snippets...")
 
     with sync_playwright() as p:
