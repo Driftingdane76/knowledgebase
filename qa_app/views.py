@@ -346,25 +346,20 @@ def save_page(request):
             if not category:
                 category = Category.objects.create(name='General')
 
-        if not page_id:
-            page_id = f'page-{int(timezone.now().timestamp() * 1000)}'
-
         # Collect list of image objects to delete after transaction commit
-        incoming_ids = [img['id'] for img in incoming_images if img.get('id')]
-        images_to_delete = list(PageImage.objects.filter(page_id=page_id).exclude(id__in=incoming_ids))
+        incoming_ids = [int(img['id']) for img in incoming_images if str(img.get('id', '')).isdigit()]
+        images_to_delete = list(
+            PageImage.objects.filter(page_id=page_id).exclude(id__in=incoming_ids)) if page_id else []
 
         with transaction.atomic():
-            page, _ = KnowledgePage.objects.update_or_create(
-                id=page_id,
-                defaults={
-                    'category': category,
-                    'title': title,
-                    'date': date_str,
-                    'username': username,
-                    'question_text': question_text,
-                    'resolution_text': resolution_text,
-                },
-            )
+            page = KnowledgePage.objects.filter(pk=page_id).first() if page_id else KnowledgePage()
+            page.category = category
+            page.title = title
+            page.date = date_str
+            page.username = username
+            page.question_text = question_text
+            page.resolution_text = resolution_text
+            page.save()
 
             # Synchronise images database records
             PageImage.objects.filter(page=page).exclude(id__in=incoming_ids).delete()
@@ -409,16 +404,14 @@ def save_page(request):
                                 ext = mime_type.split('/')[-1] if '/' in mime_type else 'png'
                                 filename = f"{img_id}.{ext}"
                                 text_result, ocr_data_result = "", []
-                            
-                            img_obj, _ = PageImage.objects.update_or_create(
-                                id=img_id,
+
+                            img_obj = PageImage.objects.create(
                                 page=page,
-                                defaults={
-                                    'name': img_info.get('name', 'image.png'),
-                                    'extracted_text': text_result,
-                                    'ocr_data': ocr_data_result
-                                },
+                                name=img_info.get('name', 'image.png'),
+                                extracted_text=text_result,
+                                ocr_data=ocr_data_result,
                             )
+
                             img_obj.file.save(filename, ContentFile(file_data), save=True)
                     except Exception as e:
                         print(f"Error saving image file: {e}")

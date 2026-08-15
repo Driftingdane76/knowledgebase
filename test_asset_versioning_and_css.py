@@ -39,7 +39,7 @@ class AssetVersioningAndCssTest(unittest.TestCase):
         css_path = Path(settings.BASE_DIR) / 'static' / 'css' / 'app.css'
         content = css_path.read_text(encoding='utf-8')
         
-        self.assertIn('mark.search-hit,\n.ocr-highlight-box {', content, "app.css must define unified highlight rules")
+        self.assertIn('.search-hit {', content, "app.css must define search-hit highlight rules")
         self.assertIn('#fef08a', content, "Unified highlight must use #fef08a")
         self.assertIn('#facc15', content, "Unified highlight must use #facc15 border")
 

@@ -2,7 +2,7 @@ import re
 import datetime
 
 # Pre-compile patterns
-cpr_pattern = re.compile(r'(?<!\d)(\d{5,6})\s*[-–—.]?\s*(\d{4})(?!\d)')
+cpr_pattern = re.compile(r'(?<!\d)(\d{4,6})\s*[-–—.]?\s*(\d{3,4})(?!\d)')
 
 # Robust Bank Registration Number Regex
 reg_keywords_pattern = re.compile(r'\b(reg\.?(?:\s*(?:nr|nummer))?|registrerings(?:\s*(?:nr|nummer))?)\b', re.IGNORECASE)
@@ -33,15 +33,18 @@ def redact_text_content(text):
     
     new_val = text
     # Redact CPR: Any valid Danish birthdate (DDMMYY) or explicit CPR/Personnummer label
+    has_cpr_keyword = bool(cpr_keyword_pattern.search(text))
     lines = new_val.split('\n')
     processed_lines = []
     for idx, line in enumerate(lines):
         prev_has_cpr = (idx > 0 and bool(cpr_keyword_pattern.search(lines[idx - 1])))
-        has_local_label = (bool(cpr_keyword_pattern.search(line)) or prev_has_cpr) and "cvr" not in line.lower()
+        has_local_label = (bool(cpr_keyword_pattern.search(line)) or (
+                    prev_has_cpr and "faktura" not in line.lower())) and "cvr" not in line.lower()
+
         def redact_match(m):
             if "cvr" in line.lower():
                 return m.group(0)
-            if is_valid_date(m.group(1)) or has_local_label:
+            if has_local_label or (has_cpr_keyword and is_valid_date(m.group(1)) and "faktura" not in line.lower()):
                 return "[REDACTED CPR]"
             return m.group(0)
         processed_lines.append(cpr_pattern.sub(redact_match, line))

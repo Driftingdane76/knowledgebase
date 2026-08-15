@@ -920,8 +920,8 @@
             editingRowId = pageId;
             editingFieldName = field;
 
-            if (!editState.id || editState.id !== pageId) {
-                const page = activePages.find(p => p.id === pageId);
+            if (!editState.id || String(editState.id) !== String(pageId)) {
+                const page = activePages.find(p => String(p.id) === String(pageId));
                 if (!page) return;
                 editState = {
                     id: page.id, categoryId: page.categoryId, title: page.title || 'Untitled',
@@ -960,7 +960,7 @@
 
         function cancelRowEditing() {
             if (editingRowId) {
-                const idx = activePages.findIndex(p => p.id === editingRowId);
+                const idx = activePages.findIndex(p => String(p.id) === String(editingRowId));
                 if (idx >= 0 && activePages[idx].isNew) {
                     activePages.splice(idx, 1);
                 }
@@ -973,7 +973,7 @@
         function saveActiveRowChanges() {
             if (!editingRowId) return;
             syncEditStateFromDOM();
-            const idx = activePages.findIndex(p => p.id === editingRowId);
+            const idx = activePages.findIndex(p => String(p.id) === String(editingRowId));
             if (idx >= 0) {
                 const payload = { ...activePages[idx], ...editState };
                 
@@ -983,7 +983,10 @@
                     return;
                 }
                 
-                delete payload.isNew;
+                if (payload.isNew) {
+                    payload.id = null;
+                    delete payload.isNew;
+                }
                 savePageToServer(payload, () => {
                     editingRowId = null; editingFieldName = null;
                     editState = { id: null, categoryId: null, title: '', date: '', username: '', questionText: '', resolutionText: '', images: [] };
@@ -993,6 +996,9 @@
         }
 
 function savePageToServer(payload, cb) {
+    // Show loading spinner on active row save button
+    const saveBtn = document.querySelector(`#row-${editingRowId} .btn-outline-success i`);
+    if (saveBtn) saveBtn.className = 'fa-solid fa-spinner fa-spin fa-xs';
     fetch('/api/pages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
@@ -1008,7 +1014,7 @@ function savePageToServer(payload, cb) {
     })
     .then(data => {
         if (data.page) {
-            const idx = activePages.findIndex(p => p.id === data.page.id);
+            const idx = activePages.findIndex(p => String(p.id) === String(data.page.id));
             if (idx >= 0) { activePages[idx] = data.page; } else { activePages.unshift(data.page); }
         }
         if (data.categories) { activeCategories = data.categories; }
@@ -1034,7 +1040,7 @@ function savePageToServer(payload, cb) {
                     if (data.error) {
                         throw new Error(data.error);
                     }
-                    activePages = activePages.filter(p => p.id !== pageId);
+                    activePages = activePages.filter(p => String(p.id) !== String(pageId));
                     if (data.categories) { activeCategories = data.categories; }
                     if (data.trendingTags) { activeTrendingTags = data.trendingTags; renderTrendingTags(); }
                     renderCategories();
@@ -1079,7 +1085,7 @@ function savePageToServer(payload, cb) {
             });
         }
 
-        window.removeEditStateImage = id => { editState.images = editState.images.filter(i => i.id !== id); renderEditStateImages(); };
+        window.removeEditStateImage = id => { editState.images = editState.images.filter(i => String(i.id) !== String(id)); renderEditStateImages(); };
 
         // ==========================================
         // LIGHTBOX & CANVAS ANNOTATION
@@ -1087,7 +1093,7 @@ function savePageToServer(payload, cb) {
         function zoomImage(imgId) {
             activeZoomedImgId = imgId;
             let img = null;
-            for (let page of activePages) { img = (page.images || []).find(i => i.id === imgId); if (img) break; }
+            for (let page of activePages) { img = (page.images || []).find(i => String(i.id) === String(imgId)); if (img) break; }
             if (!img) return;
             overlayImg.src = img.dataUrl;
             overlayLabel.textContent = img.name || 'Attached Image';
@@ -1234,7 +1240,7 @@ function savePageToServer(payload, cb) {
             let found = false;
             let targetPage = null;
             for (let page of activePages) {
-                const img = (page.images || []).find(i => i.id === activeZoomedImgId);
+                const img = (page.images || []).find(i => String(i.id) === String(activeZoomedImgId));
                 if (img) {
                     img.dataUrl = updatedDataUrl;
                     targetPage = page;
@@ -1548,7 +1554,7 @@ function savePageToServer(payload, cb) {
 
             filtered.forEach(page => {
                 const li = document.createElement('li');
-                const isE = editingRowId === page.id;
+                const isE = String(editingRowId) === String(page.id);
 
                 const isDateEditing = isE && editingFieldName === 'date';
                 const isUserEditing = isE && editingFieldName === 'username';
@@ -1767,7 +1773,7 @@ function savePageToServer(payload, cb) {
         // CLIPBOARD & GLOBAL EVENTS
         // ==========================================
         function copyResolutionText(btn, pageId) {
-            const page = activePages.find(p => p.id === pageId);
+            const page = activePages.find(p => String(p.id) === String(pageId));
             if (!page) return;
             navigator.clipboard.writeText(page.resolutionText || '').then(() => {
                 const icon = btn.querySelector('i');
