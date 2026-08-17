@@ -1497,9 +1497,7 @@ function savePageToServer(payload, cb) {
             activeTrendingTags.forEach(tag => {
                 const badge = document.createElement('span');
                 const isSelected = currentQ === tag.name.toLowerCase();
-                badge.className = isSelected
-                    ? 'badge rounded-pill bg-success-subtle text-black-50 px-2 py-1 cursor-pointer text-xs shadow-sm'
-                    : 'badge rounded-pill bg-primary-subtle text-black-50 px-2 py-1 cursor-pointer text-xs';
+                badge.className = `badge rounded-pill px-2 py-1 cursor-pointer text-xs ${isSelected ? 'active shadow-sm' : ''}`;
                 badge.textContent = `${tag.name} (${tag.count})`;
                 badge.title = isSelected ? `Fjern filter: ${tag.name}` : `Filtrér efter ${tag.name}`;
                 badge.onclick = () => {
