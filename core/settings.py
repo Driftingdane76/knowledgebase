@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 # pyrefly: ignore [missing-import]
 from django.contrib.messages import constants as messages
+from kombu import Queue
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -55,14 +56,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
     'django.contrib.postgres',
     'qa_app',
     'users',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -96,6 +95,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 ASGI_APPLICATION = 'core.asgi.application'
+
+
 
 db_engine = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
 
@@ -163,10 +164,6 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',
     'https://*.ngrok-free.dev',
@@ -284,3 +281,27 @@ if not DEBUG:
         CSRF_COOKIE_HTTPONLY = False
         SESSION_COOKIE_SAMESITE = 'Lax'
         CSRF_COOKIE_SAMESITE = 'Lax'
+
+
+# ------------------------------------------------------------------
+# Celery & Redis Task Queue Configuration
+# ------------------------------------------------------------------
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/1')
+CACHE_URL = os.getenv('CACHE_URL', 'redis://localhost:6379/2')
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+
+CELERY_TASK_QUEUES = (
+    Queue('default', routing_key='default.#'),
+    Queue('ocr', routing_key='ocr.#'),
+)
+
+CELERY_TASK_ROUTES = {
+    'qa_app.tasks.probe_ocr_queue_task': {'queue': 'ocr'},
+    'qa_app.tasks.process_page_image_ocr': {'queue': 'ocr'},
+}

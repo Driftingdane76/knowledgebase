@@ -338,8 +338,10 @@ class BackendLogicTests(TransactionTestCase):
         self.assertIsNotNone(page2.category.id)
         self.assertEqual(page2.category.name, 'General')
 
-    def test_save_page_with_base64_image(self):
-        """Test saving page with base64 image decodes it, saves file to disk, and updates PageImage.file."""
+    @patch('qa_app.tasks.run_florence_ocr_and_redact', return_value=('Sanitized text', []))
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+    def test_save_page_with_base64_image(self, mock_florence):
+        """Test saving page with base64 image enqueues task, converts to WebP, and updates PageImage."""
         payload = {
             'categoryId': self.cat1.id,
             'title': 'Page with Image',
@@ -457,9 +459,10 @@ class BackendLogicTests(TransactionTestCase):
         self.assertEqual(data['pages'][0]['images'][0]['extractedText'],
                          'Exception in thread main: java.lang.NullPointerException')
 
-    @patch('qa_app.views.extract_text_from_image')
+    @patch('qa_app.tasks.run_florence_ocr_and_redact')
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
     def test_save_page_triggers_ocr(self, mock_ocr):
-        """Test saving a new image via save_page calls the OCR helper and saves results in the database."""
+        """Test saving a new image via save_page executes the background task and updates results in database."""
         mock_ocr.return_value = ("Mocked OCR Text Results",
                                  [{'text': 'Mocked', 'left': 10, 'top': 10, 'width': 20, 'height': 5}])
 
@@ -486,12 +489,7 @@ class BackendLogicTests(TransactionTestCase):
         self.assertIsNotNone(img)
         self.assertEqual(img.extracted_text, "Mocked OCR Text Results")
         self.assertEqual(img.ocr_data, [{'text': 'Mocked', 'left': 10, 'top': 10, 'width': 20, 'height': 5}])
-
-        data = response.json()
-        self.assertEqual(data['page']['images'][0]['extractedText'], "Mocked OCR Text Results")
-        self.assertEqual(data['page']['images'][0]['ocrData'],
-                         [{'text': 'Mocked', 'left': 10, 'top': 10, 'width': 20, 'height': 5}])
-
+        self.assertEqual(img.ocr_status, 'completed')
 
 class TagModelTests(TransactionTestCase):
     def setUp(self):

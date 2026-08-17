@@ -28,6 +28,13 @@ This is a full-stack Django 5 application backed by PostgreSQL for managing an i
 - **IP Whitelisting**: `IPWhitelistMiddleware` restricts application access using the `ALLOWED_TESTER_IPS` setting.
 - **Login Rate Limiting**: `CustomLoginView` tracks `LoginAttempt` records, blocking IP addresses after 5 failed attempts within 15 minutes.
 - **Admin Tag Backfilling**: Admin view (`run_backfill_view`) enables retroactively tagging older documents via `backfill_all_tags`.
+### 4. Background Processing & Task Queues ( `core/celery.py` , `qa_app/tasks.py` )
+
+- **Celery & Redis Architecture**: Image OCR and PII redaction offloaded to background workers, returning fast (`<100ms`) HTTP responses.
+- **Dual-Queue Isolation**:
+  - **Default Queue**: `default` queue handles lightweight general application tasks.
+  - **OCR Queue**: `ocr` queue dedicated solely to Microsoft Florence-2 inference and PII masking, running with bounded concurrency (`-c 1`) to prevent GPU/CPU starvation.
+- **State Tracking**: `PageImage.ocr_status` (`pending`, `processing`, `completed`, `failed`) and `ocr_error` provide real-time status and error diagnostics directly in Django Admin.
 
 ---
 

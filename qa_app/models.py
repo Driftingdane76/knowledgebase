@@ -76,9 +76,15 @@ class KnowledgePage(models.Model):
 class PageImage(models.Model):
     """
     Represents an image (e.g., a screenshot) attached to a KnowledgePage.
-    Stores the physical file, the raw extracted OCR text, and the parsed word coordinates (ocr_data)
-    for UI highlighting and redaction purposes.
+    Stores the physical file, the raw extracted OCR text, the parsed word coordinates (ocr_data),
+    and background OCR processing status/errors for UI highlighting and redaction purposes.
     """
+    class OCRStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        PROCESSING = 'processing', 'Processing'
+        COMPLETED = 'completed', 'Completed'
+        FAILED = 'failed', 'Failed'
+
     page = models.ForeignKey(
         KnowledgePage, on_delete=models.CASCADE, related_name='images', db_index=True
     )
@@ -86,6 +92,13 @@ class PageImage(models.Model):
     file = models.FileField(upload_to='page_images/', null=True, blank=True)
     extracted_text = models.TextField(blank=True, default='')
     ocr_data = models.JSONField(blank=True, null=True)
+    ocr_status = models.CharField(
+        max_length=20,
+        choices=OCRStatus.choices,
+        default=OCRStatus.PENDING,
+        db_index=True
+    )
+    ocr_error = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

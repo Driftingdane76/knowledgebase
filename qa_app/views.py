@@ -4,56 +4,24 @@ Handles frontend rendering, database serialization, search functionality,
 and complex OCR processing (including redaction) for uploaded images.
 """
 import base64
-import datetime
-import io
 import json
 import os
 import re
-import shutil
 import sys
-import urllib.request
 
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseForbidden
-from django.contrib.auth import authenticate, get_user_model
+from django.http import JsonResponse
 from django.utils import timezone
 
 from .models import KnowledgePage, PageImage, Category, Tag
 from .utils import extract_tags
-from .florence_ocr import run_florence_ocr_and_redact
-
-try:
-    from PIL import Image, ImageDraw
-except ImportError:
-    pass
-
+from .tasks import process_page_image_ocr
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def extract_text_from_image(img_or_path):
-    """
-    Performs 100% local OCR and PII redaction using Microsoft Florence-2.
-    Detects Danish CPR numbers and Bank info, redacts them visually on the image,
-    and returns redacted text and normalized coordinates for search indexing.
-    """
-    try:
-        if isinstance(img_or_path, str):
-            img = Image.open(img_or_path).convert("RGB")
-        else:
-            img = img_or_path.convert("RGB") if img_or_path.mode != "RGB" else img_or_path
-
-        return run_florence_ocr_and_redact(img)
-    except ImportError as ie:
-        print(f"Florence-2 or torch not installed. OCR skipped: {ie}")
-        return "", []
-    except Exception as e:
-        print(f"Local OCR processing failed: {e}")
-        return "", []
-
 
 def _serialize_page(page, include_images=True):
     """Serialise a single KnowledgePage instance to a dict."""
@@ -77,7 +45,8 @@ def _serialize_page(page, include_images=True):
                 'name': img.name,
                 'dataUrl': img.file.url if img.file else '',
                 'extractedText': img.extracted_text or '',
-                'ocrData': img.ocr_data or []
+                'ocrData': img.ocr_data or [],
+                'ocrStatus': getattr(img, 'ocr_status', 'completed')
             }
             for img in page.images.all()
         ]
@@ -375,10 +344,11 @@ def save_page(request):
                             
             transaction.on_commit(commit_cleanup_files)
 
+            new_image_ids_to_process = []
             for idx, img_info in enumerate(incoming_images):
                 img_id = img_info.get('id') or f'img-{int(timezone.now().timestamp() * 1000)}-{idx}'
                 data_url = img_info.get('dataUrl', '')
-                
+
                 if data_url.startswith('data:'):
                     # New base64 file upload, decode it
                     try:
@@ -386,33 +356,19 @@ def save_page(request):
                         if match:
                             mime_type, base64_str = match.groups()
                             file_data = base64.b64decode(base64_str)
-                            
-                            # Backend WebP conversion & validation using Pillow
-                            
-                            try:
-                                img = Image.open(io.BytesIO(file_data))
-                                
-                                # Run synchronous OCR and redaction on the PIL Image
-                                text_result, ocr_data_result = extract_text_from_image(img)
-                                
-                                webp_io = io.BytesIO()
-                                img.save(webp_io, format='WEBP', quality=80)
-                                file_data = webp_io.getvalue()
-                                filename = f"{img_id}.webp"
-                            except Exception as img_err:
-                                print(f"Image processing failed: {img_err}")
-                                ext = mime_type.split('/')[-1] if '/' in mime_type else 'png'
-                                filename = f"{img_id}.{ext}"
-                                text_result, ocr_data_result = "", []
+                            ext = mime_type.split('/')[-1] if '/' in mime_type else 'png'
+                            filename = f"{img_id}.{ext}"
 
                             img_obj = PageImage.objects.create(
                                 page=page,
                                 name=img_info.get('name', 'image.png'),
-                                extracted_text=text_result,
-                                ocr_data=ocr_data_result,
+                                extracted_text='',
+                                ocr_data=[],
+                                ocr_status=PageImage.OCRStatus.PENDING,
                             )
 
                             img_obj.file.save(filename, ContentFile(file_data), save=True)
+                            new_image_ids_to_process.append(img_obj.id)
                     except Exception as e:
                         print(f"Error saving image file: {e}")
                 else:
@@ -424,7 +380,13 @@ def save_page(request):
                             'name': img_info.get('name', 'image.png'),
                         },
                     )
-            
+            # Enqueue background OCR tasks after database transaction commits
+            if new_image_ids_to_process:
+                def enqueue_ocr_tasks():
+                    for target_img_id in new_image_ids_to_process:
+                        process_page_image_ocr.delay(target_img_id)
+                transaction.on_commit(enqueue_ocr_tasks)
+
             # Extract tags from text
             try:
                 all_text = f"{page.question_text} {page.resolution_text}"
