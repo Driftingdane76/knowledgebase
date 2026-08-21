@@ -4,6 +4,7 @@ import zipfile
 import tempfile
 from pathlib import Path
 
+
 def test_deployment_api_routes():
     print("==================================================================")
     print("=== TDD TEST SUITE: AZURE DEPLOYMENT API & ACTION VALIDATION ===")
@@ -14,7 +15,7 @@ def test_deployment_api_routes():
     all_tests_passed = True
 
     # -------------------------------------------------------------------------
-    # TEST 1: Workflow Action Version Audit (v2 ZipDeploy vs v3 OneDeploy)
+    # TEST 1: Workflow Action Version Audit (Expect v3 OneDeploy)
     # -------------------------------------------------------------------------
     print("\n[TEST 1] Auditing Action Engine Version in azure-deploy.yml...")
     if not workflow_file.exists():
@@ -22,15 +23,14 @@ def test_deployment_api_routes():
         return False
 
     content = workflow_file.read_text(encoding="utf-8")
-    
+
     if "azure/webapps-deploy@v3" in content:
-        print("  ❌ [ASSERTION FAILED]: Found 'azure/webapps-deploy@v3' (OneDeploy /api/publish).")
-        print("     -> Known Flaw: Triggers 'Conflict (CODE: 409)' on Linux containers due to ARM lock table.")
-        print("     -> Required Fix: Must use 'azure/webapps-deploy@v2' (Direct /api/zipdeploy).")
-        test_1_pass = False
-    elif "azure/webapps-deploy@v2" in content:
-        print("  ✅ [PASS]: Workflow correctly pinned to 'azure/webapps-deploy@v2' (Direct /api/zipdeploy).")
+        print("  ✅ [PASS]: Workflow correctly pinned to modern 'azure/webapps-deploy@v3' (OneDeploy).")
         test_1_pass = True
+    elif "azure/webapps-deploy@v2" in content:
+        print("  ❌ [ASSERTION FAILED]: Found legacy 'azure/webapps-deploy@v2' (Direct /api/zipdeploy).")
+        print("     -> Required Fix: Upgrade to 'azure/webapps-deploy@v3' for modern Node runners and OIDC auth.")
+        test_1_pass = False
     else:
         print("  ❌ [FAIL]: 'azure/webapps-deploy' action not found or unknown version.")
         test_1_pass = False
@@ -47,18 +47,18 @@ def test_deployment_api_routes():
         test_2_pass = False
 
     # -------------------------------------------------------------------------
-    # TEST 3: Validate Zip Archive Payload Structure for ZipDeploy
+    # TEST 3: Validate Zip Archive Payload Structure
     # -------------------------------------------------------------------------
-    print("\n[TEST 3] Validating Zip Payload Creation and Structure for /api/zipdeploy...")
+    print("\n[TEST 3] Validating Zip Payload Creation and Structure for Deployment...")
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_zip = Path(tmp_dir) / "deploy_test.zip"
-        
+
         with zipfile.ZipFile(tmp_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
             for file_name in ['manage.py', 'requirements.txt']:
                 src = root_dir / file_name
                 if src.exists():
                     zf.write(src, file_name)
-            
+
             wsgi_src = root_dir / 'core' / 'wsgi.py'
             if wsgi_src.exists():
                 zf.write(wsgi_src, 'core/wsgi.py')
@@ -89,11 +89,12 @@ def test_deployment_api_routes():
     print("\n==================================================================")
     all_tests_passed = test_1_pass and test_2_pass and test_3_pass and test_4_pass
     if all_tests_passed:
-        print("🎉 [ALL TESTS PASSED]: Workflow and packaging 100% compliant with Direct ZipDeploy!")
+        print("🎉 [ALL TESTS PASSED]: Workflow and packaging 100% compliant with modern OneDeploy (v3)!")
     else:
-        print("❌ [TEST SUITE FAILED]: Workflow still uses vulnerable v3 OneDeploy engine.")
+        print("❌ [TEST SUITE FAILED]: Workflow configuration issues detected.")
     print("==================================================================")
     return all_tests_passed
+
 
 if __name__ == "__main__":
     passed = test_deployment_api_routes()

@@ -55,6 +55,7 @@ This is a full-stack Django 5 application backed by PostgreSQL for managing an i
 - **Python 3.10+** (verified on Python 3.11)
 - **PostgreSQL 13+** with the `pg_trgm` extension enabled (`CREATE EXTENSION IF NOT EXISTS pg_trgm;`)
 - **Local Microsoft Florence-2** dependencies (`torch`, `transformers<=4.47.1`, `timm`, `einops`)
+- **Redis 6+** — Required as the Celery message broker and result backend for background OCR task queuing (`redis://localhost:6379`).
 
 ### Quick Start (Windows Command Prompt)
 
@@ -75,7 +76,13 @@ This is a full-stack Django 5 application backed by PostgreSQL for managing an i
    python manage.py runserver
    ```
 
-4. **Access the Application:**
+4. **Start the Celery Worker (Background OCR — run in a separate terminal):**
+   ```cmd
+   .venv\Scripts\celery.exe -A core worker -Q default,ocr -c 1 --loglevel=INFO
+   ```
+   > Redis must be running locally on `redis://localhost:6379` before starting the worker.
+
+5. **Access the Application:**
    Open `http://127.0.0.1:8000/` in your browser.
 
 ---

@@ -7,7 +7,7 @@ def run_test():
     print("=== RUNNING ENVIRONMENT PRECEDENCE TDD TEST SUITE ===")
     print("==========================================================")
     
-    python_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.venv', 'Scripts', 'python.exe')
+    python_exe = sys.executable
     
     # We pass explicit OS environment variables that differ from .env
     test_env = os.environ.copy()

@@ -33,3 +33,11 @@ All testing scripts must be executed in Windows Command Prompt (`cmd.exe`) using
 * **`test_security_settings.py`**
   * **Purpose**: Verifies Django security settings, IP whitelisting middleware, and failed login attempt rate-limiting.
   * **Command**: `.venv\Scripts\python.exe test_security_settings.py`
+
+### ⚙️ Celery / Redis Background OCR Gotchas
+
+* **Redis must be running first**: The Django web server starts without Redis, but any image upload will fail silently at the OCR stage if the Celery worker is not connected to Redis. In development, start Redis before launching the worker.
+* **Worker concurrency is intentionally 1** (`-c 1`): Florence-2 inference is CPU/GPU bound. Running more than one concurrent OCR task causes memory exhaustion. The `ocr` queue is isolated for this reason.
+* **`transaction.on_commit()`**: OCR tasks are enqueued only *after* the DB transaction commits. This prevents a race condition where the Celery worker tries to load a `PageImage` row that does not yet exist.
+* **`ocr_status` field on `PageImage`**: Images move through `pending → processing → completed / failed`. The Django Admin surfaces both `ocr_status` and `ocr_error` for real-time diagnostics without needing to read worker logs.
+* **Flower Dashboard**: `flower>=2.0.0` is installed. Run `.venv\Scripts\celery.exe -A core flower` to open the real-time task monitor at `http://localhost:5555`.

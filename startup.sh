@@ -7,5 +7,8 @@ python -m playwright install --with-deps chromium
 # 2. Start Celery worker in background
 celery -A core worker -Q default,ocr -c 1 --loglevel=INFO &
 
-# 3. Start Gunicorn / WSGI web server
+# 3. Start Flower monitoring dashboard in background
+celery -A core flower --port=5555 &
+
+# 4. Start Gunicorn / WSGI web server
 gunicorn --bind=0.0.0.0 --timeout 600 --workers 2 core.wsgi

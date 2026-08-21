@@ -13,10 +13,10 @@ def test_config(env_vars, expected_error=None, should_pass=False):
             del env[k]
             
     env.update(env_vars)
-    
-    # We use `.venv\Scripts\python` to ensure we use the local virtual environment.
-    python_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.venv', 'Scripts', 'python.exe')
-    
+    # Use sys.executable to ensure we use the current Python interpreter across all OS platforms
+    python_exe = sys.executable
+
+
     result = subprocess.run(
         [python_exe, "manage.py", "check"],
         env=env,

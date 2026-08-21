@@ -16,9 +16,8 @@ def test_azure_env(env_vars, check_keys=None, expected_error=None, should_pass=F
             
     env['DJANGO_SETTINGS_MODULE'] = 'core.settings'
     env.update(env_vars)
-    
-    python_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.venv', 'Scripts', 'python.exe')
-    
+
+    python_exe = sys.executable
     # If check_keys provided, run python inline to inspect Django settings directly
     if check_keys:
         inspect_script = (

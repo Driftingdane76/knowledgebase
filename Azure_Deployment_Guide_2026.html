@@ -221,6 +221,7 @@
     <span class="badge">Azure App Service Linux</span>
     <span class="badge">GitHub Actions CI/CD</span>
     <span class="badge">PostgreSQL Flexible Server</span>
+    <span class="badge">Azure Cache for Redis</span>
   </div>
 </div>
 
@@ -276,9 +277,32 @@
 <div class="section">
   <div class="section-title">
     <span class="section-number">4</span>
-    Phase 4: Mandatory Azure App Service Environment Settings
+    Phase 4: Provision Azure Cache for Redis
   </div>
-  <p>In the Azure Portal, navigate to your App Service ➔ <strong>Settings</strong> ➔ <strong>Configuration</strong> (or <strong>Environment variables</strong>) and add these critical settings:</p>
+  <p>The application uses Redis as the Celery message broker and result backend for background OCR processing. You must provision an <strong>Azure Cache for Redis</strong> instance before configuring environment settings.</p>
+  <ol>
+    <li>In the <a href="https://portal.azure.com">Azure Portal</a>, search for <strong>Azure Cache for Redis</strong> and click <strong>Create</strong>.</li>
+    <li>Choose the <strong>Basic C0</strong> tier (sufficient for single-worker OCR queuing) and place it in the <strong>same region</strong> as your App Service (Denmark East).</li>
+    <li>Once provisioned, navigate to the cache &#10132; <strong>Settings</strong> &#10132; <strong>Access Keys</strong>.</li>
+    <li>Copy the <strong>Primary connection string</strong>. It will look like:
+      <div class="code-block">&lt;cachename&gt;.redis.cache.windows.net:6380,password=&lt;key&gt;,ssl=True,abortConnect=False</div>
+    </li>
+    <li>Convert it to a Django-compatible URL for use in the environment settings in Phase 5:
+      <div class="code-block">rediss://&lt;cachename&gt;.redis.cache.windows.net:6380</div>
+      <em>Note: <code>rediss://</code> with double-s enables TLS &mdash; required by Azure Redis on port 6380.</em>
+    </li>
+  </ol>
+  <div class="alert alert-warning">
+    <strong>Important:</strong> The Celery worker in <code>startup.sh</code> will fail to start if <code>CELERY_BROKER_URL</code> is not set or points to an unreachable Redis instance. This will prevent all OCR background jobs from running.
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">
+    <span class="section-number">5</span>
+    Phase 5: Mandatory Azure App Service Environment Settings
+  </div>
+  <p>In the Azure Portal, navigate to your App Service &#10132; <strong>Settings</strong> &#10132; <strong>Configuration</strong> (or <strong>Environment variables</strong>) and add these critical settings:</p>
   
   <table>
     <thead>
@@ -328,17 +352,34 @@
         <td><strong>REQUIRE_HTTPS</strong></td>
         <td><code>True</code></td>
       </tr>
+      <tr>
+        <td><strong>CELERY_BROKER_URL</strong></td>
+        <td><code>rediss://&lt;your-cache&gt;.redis.cache.windows.net:6380/0</code> <em>(Azure Cache for Redis &mdash; use <code>rediss://</code> for TLS)</em></td>
+      </tr>
+      <tr>
+        <td><strong>CELERY_RESULT_BACKEND</strong></td>
+        <td><code>rediss://&lt;your-cache&gt;.redis.cache.windows.net:6380/1</code></td>
+      </tr>
+      <tr>
+        <td><strong>CACHE_URL</strong></td>
+        <td><code>rediss://&lt;your-cache&gt;.redis.cache.windows.net:6380/2</code></td>
+      </tr>
     </tbody>
   </table>
 
   <p><strong>Startup Command</strong> (Under <em>Configuration ➔ General settings ➔ Startup Command</em>):</p>
-  <div class="code-block">gunicorn --bind=0.0.0.0 --timeout 600 --workers 4 core.wsgi:application</div>
+  <div class="code-block">bash startup.sh</div>
+  <div class="alert alert-info">
+    <strong>startup.sh</strong> installs Playwright browser binaries, starts the Celery worker
+    (<code>-Q default,ocr -c 1</code>) in the background, then launches Gunicorn.
+    Both processes share the same App Service container.
+  </div>
 </div>
 
 <div class="section">
   <div class="section-title">
-    <span class="section-number">5</span>
-    Phase 5: Create the GitHub Actions Workflow File
+    <span class="section-number">6</span>
+    Phase 6: Create the GitHub Actions Workflow File
   </div>
   <ol>
     <li>At the root of your project, create the folder structure: <span class="code-inline">.github/workflows/</span></li>
@@ -411,8 +452,8 @@ jobs:
 
 <div class="section">
   <div class="section-title">
-    <span class="section-number">6</span>
-    Phase 6: Arm the Pipeline & Deploy
+    <span class="section-number">7</span>
+    Phase 7: Arm the Pipeline & Deploy
   </div>
   <p>Run the following commands in <strong>Command Prompt (`cmd.exe`)</strong> to push the deployment pipeline to GitHub:</p>
   <div class="code-block">git add requirements.txt .github/workflows/azure-deploy.yml
@@ -422,8 +463,8 @@ git push origin main</div>
 
 <div class="section">
   <div class="section-title">
-    <span class="section-number">7</span>
-    Phase 7: Monitor the Launch & Execute Migrations
+    <span class="section-number">8</span>
+    Phase 8: Monitor the Launch & Execute Migrations
   </div>
   <ol>
     <li>Go to your repository on <strong>GitHub.com</strong> and click the <strong>Actions</strong> tab.</li>
