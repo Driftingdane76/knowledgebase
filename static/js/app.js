@@ -1782,14 +1782,55 @@ function savePageToServer(payload, cb) {
         }
 
         function copyRowLink(pageId, btn) {
-            const url = window.location.origin + window.location.pathname + '?id=' + pageId;
-            navigator.clipboard.writeText(url).then(() => {
-                const icon = btn.querySelector('i');
-                icon.className = 'fa-solid fa-check text-success';
-                btn.style.borderColor = '#10b981';
-                setTimeout(() => { icon.className = 'fa-solid fa-link'; btn.style.borderColor = ''; }, 1500);
-            }).catch(err => console.error('Failed to copy link:', err));
-        }
+        const page = activePages.find(p => String(p.id) === String(pageId));
+        if (!page) return;
+
+        const rawText = ((page.title || '') + ' ' + (page.questionText || '')).trim();
+
+        // 1. Find nummerpladen / sagsnummeret (f.eks. "EF 72 672" -> "ef-72-672")
+        const idMatch = rawText.match(/([A-Z]{2}[-\s]?\d{2}[-\s]?\d{3}|\b\d{6,}\b)/i);
+        const caseId = idMatch ? idMatch[0].replace(/\s+/g, '-').toLowerCase() : '';
+
+        // 2. Fjern standardskabelonen ("Sag vedr. bil...", "Police nr...", etc.)
+        let contentWithoutHeader = rawText
+            .replace(/\[\/?hl(?::[a-z]+)?\]/gi, '') // Fjern highlight tags
+            .replace(/\*\*/g, '')                  // Fjern markdown
+            .replace(/^(sag\s+vedr(\.|ørende)?\s*(bil)?|angående|police\s*nr\.?|vedr\.)/i, '')
+            .replace(idMatch ? idMatch[0] : '', '')  // Fjern selve nummerpladen så den ikke gentages
+            .replace(/[-:–]/g, ' ')
+            .trim();
+
+        // 3. Tag de første 4-6 meningsfulde ord af det reelle spørgsmål
+        const meaningfulWords = contentWithoutHeader
+            .split(/\s+/)
+            .filter(w => w.length > 1 && !/^(og|i|paa|til|af|vedr|bil)$/i.test(w))
+            .slice(0, 5)
+            .join('-');
+
+        // 4. Normalisér danske bogstaver
+        const charMap = { 'æ': 'ae', 'ø': 'oe', 'å': 'aa', 'Æ': 'ae', 'Ø': 'oe', 'Å': 'aa' };
+        const cleanProblem = meaningfulWords
+            .replace(/[æøåÆØÅ]/g, m => charMap[m] || m)
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        // 5. Kombinér: [Nummerplade] + [Problem]
+        const finalTopic = [caseId, cleanProblem].filter(Boolean).join('-') || 'sag';
+        const url = `${window.location.origin}${window.location.pathname}?id=${pageId}&topic=${finalTopic}`;
+
+        // 6. Kopiér til clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            const icon = btn.querySelector('i');
+            if (icon) icon.className = 'fa-solid fa-check text-success';
+            btn.style.borderColor = '#10b981';
+            setTimeout(() => {
+                if (icon) icon.className = 'fa-solid fa-link';
+                btn.style.borderColor = '';
+            }, 1500);
+        });
+    }
 
         // Global paste-to-search
         document.addEventListener('paste', e => {
